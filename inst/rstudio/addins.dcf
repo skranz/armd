@@ -1,0 +1,14 @@
+Name: armd: Preview Part
+Description: To be called in academic rmarkdown .Rmd file
+Binding: showArmdPartAddin
+Interactive: true
+
+Name: armd: Preview Document
+Description: To be called in academic rmarkdown .Rmd file
+Binding: showArmdAddin
+Interactive: true
+
+Name: armd: Compile Document
+Description: To be called in academic rmarkdown .Rmd file
+Binding: createArmdOfflineSlides
+Interactive: true
