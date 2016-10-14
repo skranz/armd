@@ -23,8 +23,23 @@ armd.block.types.df = function(...) {
 
   container.types = c("award","frame","info","note", "section","subsection","exercise","row", "column")
 
+  dot.levels = c(
+    armd = -1000,
+    section = -3,
+    subsection = -2,
+    subsubsection = -1,
+    frame = 1,
+    row = 2,
+    references = 2,
+    column = 3,
+    success = 3,
+    when = 3
+  )
+  dot.level = dot.levels[types]
+
   n = length(types)
-  bt.df = data_frame(type=types, package="armd", is.widget=FALSE, parse.inner = (type!="chunk"), is.parent=types %in% parent.types, is.container = types %in% container.types, arg.li = vector("list",n))
+  bt.df = data_frame(type=types, package="armd", is.widget=FALSE, parse.inner.blocks = (type!="chunk"), remove.inner.blocks=FALSE, is.parent=types %in% parent.types, is.container = types %in% container.types, dot.level=dot.level, arg.li = vector("list",n))
+
   bt.df
 }
 # data frame that specifies background information on blocktypes
@@ -36,8 +51,8 @@ make.am.block.types.df = function(am,opts=am$opts) {
     df = call.from.pkg(bps[[i]],"armd.block.types.df")
 
     df$package.pos = i
-    df = add.cols.if.missing(df, is.widget=FALSE, is.parent=FALSE, parse.inner=TRUE, is.container=FALSE)
-    df = df[,c("type","package","package.pos", "is.widget","is.parent","is.container", "parse.inner","arg.li")]
+    df = add.cols.if.missing(df, is.widget=FALSE, is.parent=FALSE, parse.inner.blocks=TRUE, remove.inner.blocks=FALSE, is.container=FALSE, dot.level=NA)
+    df = df[,c("type","package","package.pos", "is.widget","is.parent","is.container", "parse.inner.blocks","remove.inner.blocks", "arg.li")]
     df
   })
   # all block types

@@ -71,14 +71,6 @@ preview.armd.part.addin = function(single.part=TRUE,...) {
 
   am = parse.armd(txt=txt, dir=dir, source.file = file, show.line=show.line, filter.line = filter.line)
 
-  ui = armd.slide.ui(am)
-
-  html = shiny.ui.to.html.document(ui)
-
-  file = tempfile(fileext = ".html")
-  writeLines(html, file)
-  rstudio::viewer(url=file)
-
-
-  #view.html(ui=ui)
+  ui = armd.ui(am = am)
+  view.html(ui=ui)
 }

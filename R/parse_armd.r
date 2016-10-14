@@ -51,7 +51,7 @@ error.in.bi = function(err.msg, bi,line= paste0(am$bdf$start[bi])[1], just.start
 #' @param use.memoise shall functions like read.csv be memoised? Data sets then only have to be loaded once. This can make problem sets run faster. Debugging may be more complicated, however.
 #' @export
 parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd", am.id=am.name, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, ...) {
-  restore.point("create.am")
+  restore.point("parse.armd")
 
   am = new.env()
 
@@ -69,7 +69,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
   am$plugins = plugins
   am$css = am$head = NULL
 
-  am$css = paste0(readLines(system.file("defaults/default.css",package="armd")))
+  am$css = paste0(readLines(system.file("defaults/default.css",package="armd")), collapse="\n")
 
   if (length(txt)==1)
     txt = sep.lines(txt)
@@ -115,12 +115,10 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
   make.am.block.types.df(am, opts)
   df = find.rmd.nested(txt, dot.levels)
 
-  # remove blocks inside addons
-  # those will be dealt by the addons themselves
-
-  df$parse.inner = get.bt(df$type,am)$parse.inner
-  parent_noparse = get.levels.parents(df$level,!df$parse.inner)
-  del.rows = which(parent_noparse>0)
+  # remove blocks inside blocks that shall be removed
+  df$remove.inner.blocks = get.bt(df$type,am)$remove.inner.blocks
+  lev.par = get.levels.parents(df$level,df$remove.inner.blocks)
+  del.rows = which(lev.par>0)
   df = del.rows.and.adapt.refs(df,del.rows,ref.cols = "parent")
 
 
@@ -185,6 +183,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
 
   # Additional information for slides
   if (am$slides) {
+    restore.point("am.slides.later")
     am$num.slides = sum(am$bdf$type==am$slide.type)
     if (am$num.slides==0) {
       stop(paste0("I cannot find a block with your slide type", am$slide.type))
@@ -246,7 +245,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
   if (any(duplicated(ids))) {
     stop(paste0("The bdf id ", paste0(ids[duplicated(ids)], collapse="\n"), " are duplicated. Check your addons, chunk id, or block id."))
   }
-  write.am(am=am,dir=dir)
+  #write.am(am=am,dir=dir)
 
   # copy into global env for convenience
   copy.into.env(am$pre.env,dest = .GlobalEnv)
@@ -481,7 +480,7 @@ shorten.bdf.index = function(bdf, new = 1:NROW(bdf), old = bdf$index) {
   bdf
 }
 
-armd.dot.levels = function() {
+armd.dot.levels = function(am) {
   dot.levels = c(
     armd = -1000,
     section = -3,
@@ -571,7 +570,7 @@ armd.parse.chunk = function(bi,am, opts=armd.opts()) {
   args$comment = NA
   rmd = code.to.rmd.chunk(code,args=args)
   ui = knit.rmd(rmd,envir = am$pre.env,out.type="shiny")
-  #ui = tagList(ui, highlight.code.script())
+  ui = tagList(ui, highlight.code.script())
   set.bdf.ui(ui, bi,am)
 }
 
