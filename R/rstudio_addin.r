@@ -30,7 +30,8 @@ createArmdOfflineSlides = function(...) {
   }
   dir = dirname(doc$path)
   setwd(dir)
-  create.offline.slides(file)
+  am = parse.armd(file=file, dir=dir, source.file = file)
+  armd.offline.html(am)
 }
 
 preview.armd.part.addin = function(single.part=TRUE,...) {

@@ -11,7 +11,7 @@ examples.offline.html = function() {
 
   am = fetch.am(rmd.file = rmd.file)
 
-  html = create.offline.am(am=am)
+  html = armd.offline.html(am=am)
 
   ui = armd.slide.ui(am = am)
 
@@ -26,7 +26,7 @@ examples.offline.html = function() {
   cat(body)
 }
 
-create.offline.am = function(am, outfile=paste0(am$am.name,"_offline.html"),print.outfile=paste0(am$am.name,"_offline_print.html"), browse=TRUE) {
+armd.offline.html = function(am, outfile=paste0(am$am.name,"_offline.html"),print.outfile=paste0(am$am.name,"_offline_print.html"), browse=TRUE) {
   restore.point("create.offline.am")
 
   ui = armd.ui(am,add.page = FALSE)
@@ -261,113 +261,12 @@ as.inlined.mathjax.html = function(x, page.fun = bootstrapPage, launch.browser=T
   html = viewApp(app,launch.browser = launch.browser)
 }
 
-
-create.offline.html = function(tagList=NULL, outfile, head=NULL, body=NULL, use.button = FALSE, launch.browser=TRUE, browse=TRUE) {
-  restore.point("save.as.offline.html")
-
-  if (is.null(head) & is.null(body)) {
-    rendered = htmltools::renderTags(tagList)
-    head = rendered$head
-    body = rendered$html
-  }
-
-  app = eventsApp(adapt.ui = FALSE)
-  app$ui = tagList(
-    tags$head(head),
-    mathjax.to.offline(container.id = NULL, use.button=use.button),
-    with.mathjax(body)
-  )
-  eventHandler(eventId="downloadHtmlPage", id=NULL, fun=function(...) {
-    args = list(...)
-    restore.point("downloadHtmlPage")
-    html = args$html
-    Encoding(html) = "UTF-8"
-    html = sep.lines(html)
-    start.line = which(html == "<!-- MyHeadStart -->")[1]
-    html = html[start.line:length(html)]
-    html = c(
-'<!DOCTYPE html>
-
-<head>
-
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-',
-      html)
-    getApp()$session$sendCustomMessage(type = "closeWindow", message = "message")
-    stopApp(invisible(html))
-
-  })
-  html = viewApp(app,launch.browser = launch.browser)
-  if (!is.null(outfile)) {
-    writeUtf8(merge.lines(html), outfile)
-    if (browse)
-      browseURL(outfile)
-
-  }
-
-  restore.point("save.as.offline.html.res")
-
-  invisible(html)
-
-}
-
 offline.shiny.headers = function() {
   tagList(
     tags$head(includeScript(paste0(path.package("shiny"),"/www/shared/jquery.min.js"))),
     tags$head(includeCSS(paste0(path.package("shiny"),"/www/shared/bootstrap/css/bootstrap.css"))),
     tags$head(includeScript(paste0(path.package("shiny"),"/www/shared/bootstrap/js/bootstrap.min.js")))
   )
-}
-
-offline.slide.am.ui = function(am = NULL, am.file=NULL, rmd.file=NULL) {
-  restore.point("offline.slide.am.ui")
-
-  am = fetch.am(am=am, am.file=am.file, rmd.file = rmd.file)
-  tl = armd.ui(am, add.page=FALSE)
-  ui = bootstrapPage(
-    tags$head(HTML("\n<!-- MyHeadStart -->\n")),
-    offline.shiny.headers(),
-    tl
-  )
-  ui
-}
-
-
-offline.print.slide.am.ui = function(am = NULL, am.file=NULL, rmd.file=NULL) {
-  restore.point("offline.print.slide.am.ui")
-
-  am = fetch.am(am=am, am.file=am.file, rmd.file = rmd.file)
-
-  css = if (!is.null(am$css)) tags$head(tags$style(am$css)) else NULL
-  head = if (!is.null(am$head)) tags$head(HTML(am$head)) else NULL
-  content.ui = am$bdf$ui[[1]]
-
-  content = htmltools::renderTags(content.ui)$html
-
-  #content = unicode.html.math(content)
-
-  mcss = tags$head(tags$style(math.css()))
-
-  ui = bootstrapPage(
-
-    tags$head(HTML("\n<!-- MyHeadStart -->\n")),
-    tags$head(includeScript(paste0(path.package("shiny"),"/www/shared/jquery.min.js"))),
-    tags$head(includeCSS(paste0(path.package("shiny"),"/www/shared/bootstrap/css/bootstrap.css"))),
-    tags$style(HTML(slides.print.screen.css())),
-
-    head,
-    css,
-    mcss,
-
-    HTML(content),
-    tags$script(class="remove_me",
-      '
-$("div").css("display","block");
-$(".remove_offline_print").remove();
-$(".remove_offline").remove();
-      ')
-  )
-  ui
 }
 
 shiny.ui.to.html.document = function(ui) {
