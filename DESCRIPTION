@@ -23,5 +23,7 @@ Depends:
     jsonlite,
     rmdtools,
     yaml,
-    R.cache
+    R.cache,
+    shinyEventsUI,
+    shinyBS
 RoxygenNote: 5.0.0

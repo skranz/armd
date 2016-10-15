@@ -1,4 +1,4 @@
-find.bdf.auto.slide.type = function(df) {
+find.bdf.auto.slide.type = function(bdf) {
   restore.point("find.bdf.auto.slide.type")
 
   if ("frame" %in% bdf$type) return("frame")

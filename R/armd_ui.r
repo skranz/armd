@@ -32,19 +32,19 @@ examples.make.am.html = function() {
   create.offline.html(tl, outfile=paste0(am.name,"_offline_print.html"),use.button = FALSE)
 }
 
-armd.ui = function(am = NULL, am.file=NULL, rmd.file=NULL) {
+armd.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) {
   restore.point("armd.ui")
 
   am = fetch.am(am=am, am.file=am.file, rmd.file = rmd.file)
   if (isTRUE(am$slides)) {
-    ui = armd.slide.ui(am=am)
+    ui = armd.slide.ui(am=am, add.page=add.page)
   } else {
-    ui = armd.page.ui(am=am)
+    ui = armd.page.ui(am=am, add.page=add.page)
   }
 
 }
 
-armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL) {
+armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) {
   restore.point("armd.slide.ui")
 
   am = fetch.am(am=am, am.file=am.file, rmd.file = rmd.file)
@@ -63,12 +63,12 @@ armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL) {
     '
   )
 
-  ui = bootstrapPage(
+  ui = tagList(
     tags$head(HTML("\n<!-- MyHeadStart -->\n")),
 
     singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css',href = 'highlightjs/styles/mycode.css'))),
-    singleton(tags$head(tags$script(src = 'highlightjs/highlight.min.js',type = 'text/javascript'))),
-    singleton(tags$head(tags$script(src = 'highlightjs/languages/r.min.js',type = 'text/javascript'))),
+    singleton(tags$head(tags$script(src = 'highlightjs/highlight.min.js',class="remove_offline", type = 'text/javascript'))),
+    singleton(tags$head(tags$script(src = 'highlightjs/languages/r.min.js', class="remove_offline",type = 'text/javascript'))),
     head,
     css,
     mcss,
@@ -76,15 +76,19 @@ armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL) {
     div(id="maindiv",
       content.ui
     ),
-    includeScript(paste0(path.package("armd"),"/www/offline_slides.js")),
+    tags$script(class="remove_offline_print",
+      src="armd/armd_slides.js"
+    ),
     tags$script(
+      class="remove_offline_print",
       HTML(start.js)
     )
   )
-  withMathJax(ui)
+  if (add.page) ui = bootstrapPage(ui)
+  with.mathjax(ui)
 }
 
-armd.page.ui = function(am = NULL, am.file=NULL, rmd.file=NULL) {
+armd.page.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) {
   restore.point("armd.slide.ui")
   am = fetch.am(am=am, am.file=am.file, rmd.file = rmd.file)
 
@@ -93,12 +97,10 @@ armd.page.ui = function(am = NULL, am.file=NULL, rmd.file=NULL) {
   content.ui = am$bdf$ui[[1]]
   mcss = tags$head(tags$style(math.css()))
 
-  ui = bootstrapPage(
-    tags$head(HTML("\n<!-- MyHeadStart -->\n")),
-
+  ui = tagList(
     singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css',href = 'highlightjs/styles/mycode.css'))),
-    singleton(tags$head(tags$script(src = 'highlightjs/highlight.min.js',type = 'text/javascript'))),
-    singleton(tags$head(tags$script(src = 'highlightjs/languages/r.min.js',type = 'text/javascript'))),
+    singleton(tags$head(tags$script(src = 'highlightjs/highlight.min.js',class="remove_offline", type = 'text/javascript'))),
+    singleton(tags$head(tags$script(src = 'highlightjs/languages/r.min.js',class="remove_offline",type = 'text/javascript'))),
     head,
     css,
     mcss,
@@ -106,6 +108,7 @@ armd.page.ui = function(am = NULL, am.file=NULL, rmd.file=NULL) {
       content.ui
     )
   )
-  withMathJax(ui)
+  if (add.page) ui = bootstrapPage(ui)
+  with.mathjax(ui)
 }
 

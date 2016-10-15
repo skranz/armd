@@ -259,7 +259,7 @@ slide.title.bar.ui = function(title, slide.ind, num.slides) {
     h4(class="slide_title",title),
     HTML("</td><td align='right' valign='top' nowrap>"),
     HTML("<table><tr><td valign='center' nowrap>"),
-    div(class="nav_buttons_div",  armd.navigate.btns()),
+    div(class="nav_buttons_div remove_offline_print",  armd.navigate.btns()),
     HTML("</td><td valign='center' nowrap style='padding-left: 5px'>"),
     HTML(paste0(slide.ind, " of ",num.slides)),
     HTML("</td></tr></table>"),
