@@ -76,7 +76,7 @@ read.yaml = function(file=NULL, verbose=FALSE, keep.quotes=TRUE, quote.char = "_
     str = gsub(":",": ",str)
     str = gsub(":  ",": ",str)
   }
-  
+
   handlers=list("bool#yes"=yaml.bool.handler.yes,"bool#no"=yaml.bool.handler.no)
   if (keep.quotes) {
     str = gsub('"',quote.char,str,fixed=TRUE)
@@ -84,7 +84,7 @@ read.yaml = function(file=NULL, verbose=FALSE, keep.quotes=TRUE, quote.char = "_
       gsub(quote.char,'"',val,fixed=TRUE)
     }
     handlers[["str"]]=yaml.string.handler
-  } 
+  }
   if (verbose)
     cat(str)
 
@@ -140,4 +140,5 @@ print.yaml = function(obj) {
     cat(as.yaml(obj))
   }
 }
+
 

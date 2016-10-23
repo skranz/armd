@@ -633,6 +633,29 @@ load.packages = function(libs, verbose=FALSE) {
 }
 
 
+copy.env = function(env) {
+  new = as.environment(as.list(env))
+  parent.env(new) = parent.env(env)
+  new
+}
+
+
+insert.into.vec = function(vec, new, pos, replace=FALSE) {
+  restore.point("insert.into.vec")
+
+  keep.left = seq_len(min(pos)-1)
+
+  if (replace) {
+    keep.right = if (max(pos)<length(vec)) (max(pos)+1):length(vec) else integer(0)
+  } else {
+    keep.right= if (min(pos)<=length(vec)) (min(pos)):length(vec) else integer(0)
+  }
+
+  c(vec[keep.left],new,vec[keep.right])
+
+}
+
+
 grow.list = function(li) {
   c(li, vector("list", length(li)))
 }
@@ -661,95 +684,15 @@ growlist.to.list = function(g) {
 }
 
 
+examples.str.to.valid.file.name = function() {
+ str.to.valid.file.name("chunk 1 a)")
+}
+str.to.valid.chunk.name = function(str, replace.char = "_") {
+  str = gsub("[^a-zA-Z0-9_]",replace.char,str)
+  str
+}
 
-
-examples.grow.list = function() {
-
-
-  growlist.madd = function(gli, ...) {
-    li = list(...)
-    len =  length(li)
-    if (length(gli$li)< gli$size+len)
-      c(gli$li, vector("list", gli$size+len))
-    #gli[(gli$size+1)gli] =
-    gli$size = gli$size+length(gli)
-  }
-
-  # I did not find an elegant solution for quickly growing a list
-  # if its size is not known ex-ante and we do not want to fully unlist it
-  # grow list seems so far the best approach
-  library(microbenchmark)
-  runBenchmark <- function(n) {
-      microbenchmark(times = 3,
-          growlist = {
-            g = growlist(100)
-            for(i in 1:n) {
-              growlist.add(g, list(i=i))
-            }
-          },
-          grow_list = {
-            li = vector("list",10)
-            for(i in 1:n) {
-              if (length(li)<i) li = grow.list(li)
-              li[[i]] = list(i=i)
-            }
-          },
-          prelocate = {
-            li = vector("list",n)
-            for(i in 1:n) {
-              li[[i]] = list(i=i)
-            }
-          },
-          rstack = {
-            s = rstack()
-            for(i in 1:n) {s = insert_top(s,list(i))}
-          },
-           c_ = {
-              a <- list(0)
-              for(i in 1:n) {a = c(a, list(i))}
-          },
-          list_ = {
-              a <- NULL
-              for(i in 1:n) {a <- list(a, list(i=i))}
-              unlist(a)
-          },
-          by_index = {
-              a <- list(0)
-              for(i in 1:n) {a[length(a) + 1] <- i}
-              a
-          }
-       )
-  }
-  runBenchmark(n = 1000)
-
-  fun = function(g,i) {
-    g$li[[i]]<-list(i=i)
-  }
-  fun2 = function(g,i) {
-    size = g$size+1
-    g$size = size
-    g$li[[g$size]]<-list(i=i)
-    len = length(g$li)
-
-  }
-
-
-  Rprof(tmp <- tempfile())
-  n = 100000
-  g = growlist(1000)
-  for(i in 1:n) {
-    growlist.add(g, list(i=i))
-  }
-
-  li = vector("list",10)
-  for(i in 1:n) {
-    if (length(li)<i) li = grow.list(li)
-    li[[i]] = list(i=i)
-  }
-
-  Rprof()
-  summaryRprof(tmp)
-  unlink(tmp)
-
-
+str.to.valid.file.name = function(str, replace.char = "_") {
+  str = gsub("[ \\(\\)\\.\\:]",replace.char,str)
+  str
 }

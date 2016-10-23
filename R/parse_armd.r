@@ -1,39 +1,13 @@
-examples.create.am = function() {
-  library(yaml)
-  setwd("D:/libraries/armd/examples/sporer")
-  txt = readLines("armdEnvironmentalRegulations_sol.Rmd")
-  setwd("D:/libraries/armd/examples/examples")
-  txt = readLines("Example2_sol.Rmd")
-
-  #setwd("D:/libraries/armd/examples/auction")
-  #txt = readLines("auction_sol.Rmd")
-  popts=default.armd.opts(
-    am.type = "rmd",
-    show.solution.btn = TRUE,
-    slides = FALSE,
-    lang = "de")
-  am = create.am(txt,catch.errors = FALSE, priority.opts=popts, am.type="rmd")
-
-  write.am.rmd(am)
-
-  bdf = am$bdf
-  rmc = am$rmc
-
-  restore.point.options(display.restore.point = !TRUE)
-
-  app = armdApp(am)
-  viewApp(app,launch.browser = TRUE)
-
+examples.parse.am = function() {
+  setwd("D:/libraries/armd/examples")
+  am = parse.armd(file="test.Rmd")
+  preview.armd(am)
 }
 
-
-error.in.bi = function(err.msg, bi,line= paste0(am$bdf$start[bi])[1], just.start.line=TRUE, am=get.am()) {
-  restore.point("error.in.bi")
-
-  org.line = am$txt.lines[line]
-  file = am$source.files[am$txt.source[line]]
-  msg = paste0(err.msg,"\nSee line ", org.line, " in file ", file)
-  stop(msg,call. = FALSE)
+preview.armd = function(am=NULL, am.file=NULL,rmd.file=NULL,...) {
+  fetch.am(am, am.file, rmd.file)
+  ui = armd.ui(am = am)
+  view.html(ui=ui,...)
 }
 
 
@@ -69,7 +43,6 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
   am$plugins = plugins
   am$css = am$head = NULL
 
-  am$css = paste0(readLines(system.file("defaults/default.css",package="armd")), collapse="\n")
 
   if (length(txt)==1)
     txt = sep.lines(txt)
@@ -104,22 +77,38 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
     opts[names(so)] = so
   }
 
+  # special treatment for rtutor
+  if (isTRUE(opts$rtutor)) {
+    library(RTutor3)
+    opts = do.call(default.ps.opts, opts)
+    am$css = paste0(readLines(system.file("defaults/default.css",package="RTutor3"),warn = FALSE), collapse="\n")
+
+  } else {
+    am$css = paste0(readLines(system.file("defaults/default.css",package="armd"), warn=FALSE), collapse="\n")
+  }
+
   # now install default opts given the settings
   opts = do.call(default.armd.opts, opts)
+
+  df = find.rmd.nested(txt, dot.levels)
+  opts = add.block.default.packages.to.opts(df$type, opts)
 
   # priority opts overwrite settings
   opts[names(priority.opts)] = priority.opts
 
   set.armd.opts(opts)
   am$opts = opts
+
   make.am.block.types.df(am, opts)
-  df = find.rmd.nested(txt, dot.levels)
+
 
   # remove blocks inside blocks that shall be removed
-  df$remove.inner.blocks = get.bt(df$type,am)$remove.inner.blocks
-  lev.par = get.levels.parents(df$level,df$remove.inner.blocks)
+  remove.inner.blocks = get.bt(df$type,am)$remove.inner.blocks
+  lev.par = get.levels.parents(df$level,remove.inner.blocks)
   del.rows = which(lev.par>0)
   df = del.rows.and.adapt.refs(df,del.rows,ref.cols = "parent")
+
+
 
 
   am$slides = opts$slides
@@ -151,7 +140,11 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
     output.id=  "",
     out.rmd = "", sol.rmd="",shown.rmd=""
   )
-  bdf = cbind(bdf, select(get.bt(bdf$type,am),-type))
+  bdf = cbind(bdf, select(get.bt(bdf$type,am),-type,-remove.inner.blocks))
+
+  lev.par = get.levels.parents(bdf$level,!bdf$parse.inner.block)
+  bdf$parse.block = lev.par == 0
+
 
   # Filter bdf if only a subset of elements shall be compiled / shown
   if (!is.null(filter.line)) {
@@ -176,7 +169,17 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
   am$init.env = new.env(parent=parent.env(globalenv()))
   am$pre.env = new.env(parent=am$init.env)
 
-  source.extra.code.file(extra.code.file = extra.code.file, am=am)
+  if (isTRUE(am$opts$use.memoise))
+    am$memoise.fun.li = memoise.fun.li(am$opts$memoise.funs)
+
+  source.extra.code.file(extra.code.file = extra.code.file, am)
+
+  am$opts$has.widgets = am$has.widgets = any(bdf$is.widget)
+  am$rtutor = am$opts$rtutor
+  if (am$opts$has.widgets | am$opts$rtutor) {
+    library(RTutor3)
+    RTutor3::rtutor.init.widgets(am)
+  }
 
   # set knitr output for data frames
   do.call(set.knit.print.opts, c(list(output="html"),am$opts$knit.print.param))
@@ -237,7 +240,6 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
 
   am$bdf$parent_container = get.levels.parents(am$bdf$level, am$bdf$is.container)
 
-
   am$navbar.ui = armd.navbar(am=am, nav.levels = opts$nav.levels)
 
   # tests
@@ -252,17 +254,6 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
 
   am
 }
-
-write.am = function(am, file.name=paste0(dir,"/",am$am.name,".am"), dir=getwd()) {
-  restore.point("write.am")
-
-  suppressWarnings(saveRDS(am, file.name))
-}
-
-read.am = function(file.name=paste0(dir,"/",am.name,".am"), dir=getwd(), am.name="") {
-  readRDS(file.name)
-}
-
 
 source.line.to.line = function(line, am, source=1) {
   restore.point("source.line.to.line")
@@ -301,35 +292,7 @@ block.source.msg = function(bi, am) {
 
 }
 
-# Some default packages for addons
-# Can be used to automatically load packages
-armd.widget.packages = function() {
-  c(pane="EconCurves",plotpane="EconCurves",panequiz="EconCurves")
-}
 
-armd.init.Widget = function(am, widget) {
-  restore.point("armd.init.Widget")
-  widget.fun = paste0("armd.widget.",widget)
-  if (exists(widget.fun)) {
-    am$Addons[[widget]] = do.call(widget.fun,list())
-  } else {
-    pkgs = armd.widget.packages()
-    if (!widget %in% names(pkgs)) {
-      stop(paste0("\nWe don't have a built-in block type ", widget,". But I could not find the function ", widget.fun, " that identifies the block as an widget. (Have you loaded the required package with the widget?)"))
-      am$addons = setdiff(am$addons,widget)
-      stop()
-    } else {
-      if (require(pkgs[widget],character.only = TRUE)) {
-        warning(paste0("\nI loaded the package ", pkgs[widget], " for the widget ", widget,"."))
-        am$Addons[[widget]] = do.call(widget.fun,list())
-      } else {
-        stop(paste0("\nWe don't have a built-in block type ", widget,". This widget is defined in the package ", pkgs[widget]," but you have not installed that package."))
-        stop()
-      }
-    }
-
-  }
-}
 
 adapt.ignore.include = function(am, txt=am$txt, source.file="main") {
   restore.point("adapt.ignore.include")
@@ -405,21 +368,6 @@ adapt.include = function(am,txt=am$txt) {
     txt = am$txt
   }
   return(TRUE)
-}
-
-insert.into.vec = function(vec, new, pos, replace=FALSE) {
-  restore.point("insert.into.vec")
-
-  keep.left = seq_len(min(pos)-1)
-
-  if (replace) {
-    keep.right = if (max(pos)<length(vec)) (max(pos)+1):length(vec) else integer(0)
-  } else {
-    keep.right= if (min(pos)<=length(vec)) (min(pos)):length(vec) else integer(0)
-  }
-
-  c(vec[keep.left],new,vec[keep.right])
-
 }
 
 
@@ -504,17 +452,26 @@ armd.dot.levels = function(am) {
 armd.preparse.block = function(bi,am, opts = am$opts) {
   restore.point("armd.preparse.block")
   type = am$bdf$type[[bi]]
-  # task lines
+
+  # important for setting task.lines
+  if (isTRUE(am$rtutor) | isTRUE(am$has.widgets)){
+    rtutor.preparse.block(bi, am, opts=opts)
+  }
+
 }
 
 
 armd.parse.block = function(bi,am) {
   restore.point("armd.parse.block")
 
-  # Don't parse blocks inside chunks here
-  if (am$bdf$parent_chunk[[bi]] >0) return()
+  bdf = am$bdf
+  if (!bdf$parse.block[[bi]]) return()
 
-  type = am$bdf$type[[bi]]
+  if (bdf$is.widget[[bi]]) {
+    return(rtutor.parse.widget(bi,am))
+  }
+
+  type = bdf$type[[bi]]
   fun.name = paste0("armd.parse.",type)
   pkg =get.bt(type, am)$package
 
@@ -716,24 +673,6 @@ armd.parse.image = function(bi,am, download.image=TRUE) {
 armd.parse.solved = function(bi,am) {
   restore.point("armd.parse.solved")
   armd.parse.as.container(bi,am)
-}
-
-
-armd.parse.column = function(bi,am) {
-  restore.point("armd.parse.column")
-  bdf = am$bdf; br = bdf[bi,];
-  args = parse.block.args(arg.str = br$arg.str)
-  if (is.null(args$width)) args$width = 6
-  if (is.null(args$offset)) args$offset = 0
-  ui.fun = function(ui) {
-    column(width = args$width, offset=args$offset,ui)
-  }
-  armd.parse.as.container(bi,am, ui.fun=ui.fun)
-}
-
-armd.parse.row = function(bi,am) {
-  restore.point("armd.parse.row")
-  armd.parse.as.container(bi,am, ui.fun=fluidRow)
 }
 
 armd.parse.armd = function(bi,am) {
@@ -1187,44 +1126,12 @@ get.non.children.fragments.from.layout.txt = function(bi,am,bdf=am$bdf, child.in
 }
 
 
-copy.env = function(env) {
-  new = as.environment(as.list(env))
-  parent.env(new) = parent.env(env)
-  new
-}
-
-#' Parse the name of a knitr chunk and its arguments
-#' @export
-parse.chunk.args = function(header, arg.str=NULL) {
-  restore.point("parse.chunk.opt.and.name")
-  if (!is.null(arg.str)) {
-    if (is.na(arg.str)) return(list())
-    return(knitr:::parse_params(arg.str))
-  }
-
-  str = str.right.of(header,"r ",not.found = NA)
-  if (is.na(str)) return(list())
-  knitr:::parse_params(str.left.of(str,"}"))
-}
-
 
 make.am.ui = function(am, bdf=am$bdf) {
   rows = which(bdf$parent == 0)
 
   ui.li = bdf$ui[rows]
 
-}
-
-get.yaml.block.args = function(bi,am) {
-  restore.point("get.yaml.block.args")
-
-  args = parse.block.args(arg.str = am$bdf$arg.str[[bi]])
-  yaml = get.bi.am.str(bi,am)
-  if (!is.null(yaml)) {
-    yaml.arg = yaml.load(paste0(yaml,collapse="\n"))
-    args[names(yaml.arg)] = yaml.arg
-  }
-  args
 }
 
 default.navbar.link.fun = function(title, level, bi=NULL) {
@@ -1276,6 +1183,26 @@ get.bi.inner.txt = function(bi,txt = am$txt, am) {
 
 }
 
+error.in.bi = function(err.msg, bi,line= paste0(am$bdf$start[bi])[1], just.start.line=TRUE, am=get.am()) {
+  restore.point("error.in.bi")
+
+  org.line = am$txt.lines[line]
+  file = am$source.files[am$txt.source[line]]
+  msg = paste0(err.msg,"\nSee line ", org.line, " in file ", file)
+  stop(msg,call. = FALSE)
+}
+
+
+write.am = function(am, file.name=paste0(dir,"/",am$am.name,".am"), dir=getwd()) {
+  restore.point("write.am")
+
+  suppressWarnings(saveRDS(am, file.name))
+}
+
+read.am = function(file.name=paste0(dir,"/",am.name,".am"), dir=getwd(), am.name="") {
+  readRDS(file.name)
+}
+
 source.extra.code.file = function(extra.code.file, am) {
   restore.point("source.extra.code.file")
   # Source extra.code
@@ -1286,153 +1213,5 @@ source.extra.code.file = function(extra.code.file, am) {
   }
 }
 
-remove.verbatim.end.chunks = function(chunk.start, chunk.end) {
-  restore.point("remove.verbatim.end.chunks")
-  df = data.frame(ind =c(0, seq_along(chunk.start), seq_along(chunk.end)),
-                  row=c(0, chunk.start,chunk.end),
-                  type=c("f",
-                         rep("s",length(chunk.start)),
-                         rep("e",length(chunk.end))
-                       )
-                  )
-  df = arrange(df,row)
-  df$del =  df$type == "e" & !is.true(lag(df$type) == "s")
-
-  keep.ind = df$ind[df$type=="e" & !df$del]
-  chunk.end[keep.ind]
-}
 
 
-chunk.opt.string.to.list = function(str, keep.name=FALSE) {
-  restore.point("chunk.opt.string.to.list")
-  #str = "```{r 'out_chunk_2_1_b', fig.width=5, fig.height=5, eval=FALSE, echo=TRUE}"
-
-  tokens = str.split(str,",")
-  str = str.between(str,"{r","}")
-  code = paste0("list(",str,")")
-  li = eval(base::parse(text=code,srcfile=NULL))
-
-  if (keep.name) return(li)
-  if (length(li)==0) return(li)
-
-  #if ("replace.sol" %in% names(li))
-  #  stop("nbfbfurb")
-  # remove chunk.name
-  if (is.null(names(li))) {
-    return(li[-1])
-  } else if (nchar(names(li)[1]) == 0) {
-    return(li[-1])
-  }
-  li
-}
-
-
-fast.name.rmd.chunks = function(txt,prefix = "chunk_", chunk.lines = NULL, method="number") {
-  restore.point("name.rmd.chunks.by.number")
-
-  if (is.null(chunk.lines)) {
-    chunk.lines = which(str.starts.with(txt,"```{r"))
-  }
-  if (length(chunk.lines)==0) return(txt)
-  str = str.right.of(txt[chunk.lines],'```{r')
-
-  comma.pos = str.locate.first(str,",")[,1]
-  eq.pos = str.locate.first(str,"=")[,1]
-  brace.pos = str.locate.first(str,"}")[,1]
-
-  has.eq = !is.na(eq.pos) & !is.true(comma.pos < eq.pos)
-  has.comma = !is.na(comma.pos) & !has.eq
-
-  if (method=="number") {
-    name = paste0('"chunk_',seq_along(str),'"')
-  } else {
-    name = random.string(length(str),nchar = 14)
-  }
-  right = str
-  right[has.eq] = paste0(", ",str[has.eq])
-  right[has.comma] = substring(str[has.comma],comma.pos[has.comma])
-  right[!has.comma & !has.eq] = "}"
-
-  new =  paste0("```{r ",name,right)
-  txt[chunk.lines] = new
-  txt
-}
-
-
-#' Set default names for the chunks of problem set rmd files
-#' @param rmd.file file name
-#' @param txt alternative the code as txt file
-#' @param only.empy.chunks if FALSE (default) name all chunks.
-#'        Otherwise only empty chunks are overwritten
-#' @param keep.option if TRUE (default) don't change chunk options;
-#'        otherwise clear all chunk options (dangerous)
-#'
-name.rmd.chunks = function(rmd.file=NULL, txt=readLines(rmd.file), only.empty.chunks=FALSE, keep.options=TRUE, valid.file.name = FALSE) {
-  restore.point("name.rmd.chunks")
-  ex.name = ""
-  part.name = ""
-  in.code = FALSE
-  i = 2
-  counter = 1
-
-  used.chunk.names = NULL
-
-  str = "```{r 'out_chunk_2_1_b', fig.width=5, fig.height=5, eval=FALSE, echo=TRUE}"
-  for (i in 1:length(txt)) {
-    str = txt[i]
-
-
-    if (str.starts.with(str, "```{r")) {
-      if ((!only.empty.chunks) | str.trim(str) == "```{r }" | str.trim(str) == "```{r}") {
-        counter.str = ifelse(counter==1,"", paste0(" ",counter))
-
-        # preserve chunk options
-        if (has.substr(str,"=")) {
-          rhs.str = paste0(",",chunk.opt.list.to.string(chunk.opt.string.to.list(str)))
-        } else {
-          rhs.str = ""
-        }
-        chunk.name = paste0(ex.name,' ',part.name, counter.str)
-
-        chunk.name = str.to.valid.chunk.name(str.trim(chunk.name))
-
-        if (chunk.name %in% used.chunk.names) {
-          str = paste0("I generated the chunk name ", chunk.name, " twice. Make sure that you have unique exercise names and don't duplicate exerice parts like a) b) a).")
-          warning(str)
-          chunk.name = paste0(chunk.name, "___", sample.int(10000000,1))
-        }
-        used.chunk.names = c(used.chunk.names, chunk.name)
-
-        txt[i] = paste0('```{r "',chunk.name,'"', rhs.str,"}")
-      }
-      counter = counter+1
-    } else if (str.starts.with(str,"## Exercise ")) {
-      ex.name = str.right.of(str,"## Exercise ")
-      ex.name = gsub("#","", ex.name, fixed=TRUE)
-      ex.name = str.left.of(ex.name," --", not.found="all")
-      if (!valid.file.name)
-        counter = 1
-      part.name = ""
-    } else if (!is.na(temp.part <- str_extract(str,"^([a-z]|[ivx]*)\\)")[1]  )) {
-      part.name = gsub(")","",temp.part, fixed=TRUE)
-      if (!valid.file.name)
-        counter = 1
-    }
-  }
-  if (!is.null(rmd.file))
-    writeLines(txt, rmd.file)
-  invisible(txt)
-}
-
-examples.str.to.valid.file.name = function() {
- str.to.valid.file.name("chunk 1 a)")
-}
-str.to.valid.chunk.name = function(str, replace.char = "_") {
-  str = gsub("[^a-zA-Z0-9_]",replace.char,str)
-  str
-}
-
-str.to.valid.file.name = function(str, replace.char = "_") {
-  str = gsub("[ \\(\\)\\.\\:]",replace.char,str)
-  str
-}

@@ -48,7 +48,11 @@ make.am.block.types.df = function(am,opts=am$opts) {
 
   bps = opts$block.packages
   li = lapply(seq_along(bps), function(i) {
-    df = call.from.pkg(bps[[i]],"armd.block.types.df")
+    pkg = bps[[i]]
+    if (!require(pkg,character.only = TRUE)) {
+      stop("You need to install the R package '",pkg,"' to compile this file. The package may not be on CRAN and possibly must be installed from Github. Best google the package name for installation instructions.")
+    }
+    df = call.from.pkg(pkg,"armd.block.types.df")
 
     df$package.pos = i
     df = add.cols.if.missing(df, is.widget=FALSE, is.parent=FALSE, parse.inner.blocks=TRUE, remove.inner.blocks=FALSE, is.container=FALSE, dot.level=NA)
@@ -80,5 +84,21 @@ add.cols.if.missing = function(df, ...) {
     if (!has.col(df,col)) df[[col]] = args[[col]]
   }
   df
+}
+
+# Some default packages for addons
+# Can be used to automatically load packages
+armd.block.type.default.packages = function() {
+  c(pane="EconCurves",plotpane="EconCurves",panequiz="EconCurves",
+    preknit="RTutor3",precompute="RTutor3",award="RTutor3",
+    quiz="RTutor3")
+
+}
+
+add.block.default.packages.to.opts = function(types, opts) {
+  pkg = armd.block.type.default.packages()
+  pkg = pkg[names(pkg) %in% types]
+  opts$block.packages = unique(c(opts$block.packages,pkg))
+  opts
 }
 
