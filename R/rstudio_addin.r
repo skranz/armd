@@ -72,6 +72,14 @@ preview.armd.part.addin = function(single.part=TRUE,...) {
 
   am = parse.armd(txt=txt, dir=dir, source.file = file, show.line=show.line, filter.line = filter.line)
 
+  if (isTRUE(am$rtutor)) {
+    library(RTutor3)
+    ps = armd.to.ps(am)
+    app = rtutorApp(ps)
+    viewApp(app,launch.browser = TRUE)
+    return()
+  }
+
   ui = armd.ui(am = am)
   view.html(ui=ui)
 }

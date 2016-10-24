@@ -7,12 +7,12 @@ Google Code style (c) Aahan Krish <geekpanth3r@gmail.com>
 
 pre code {
   font-family: 'Lucida Console';
-  color: #005;  
+  color: #005;
 }
 
 pre code.r {
   font-family: 'Lucida Console';
-  color: #000;  
+  color: #000;
 }
 
 pre .operator,
@@ -40,7 +40,7 @@ pre .cs .keyword {
 pre .comment {
  color: #070;
  /*font-weight: bold;*/
- font-family: Sniglet;
+ font-family: Sniglet,'Comic Sans MS', 'Lucida Console';
 }
 
 pre .keyword {

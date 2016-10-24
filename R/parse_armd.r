@@ -24,7 +24,7 @@ preview.armd = function(am=NULL, am.file=NULL,rmd.file=NULL,...) {
 #' @param am.has.sol shall the sample solution be stored in the .am file. Set this option to FALSE if you use problem sets in courses and don't want to assess students the sample solution easily
 #' @param use.memoise shall functions like read.csv be memoised? Data sets then only have to be loaded once. This can make problem sets run faster. Debugging may be more complicated, however.
 #' @export
-parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd", am.id=am.name, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, ...) {
+parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL, am.id= NULL, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, ...) {
   restore.point("parse.armd")
 
   am = new.env()
@@ -35,8 +35,6 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
   if (!dir.exists(figure.dir)) {
     dir.create(figure.dir)
   }
-  am$am.name = am.name
-  am$am.id = am.id
   am$Addons = list()
   am$dir = dir
   am$figure.dir = figure.dir
@@ -77,6 +75,15 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
     opts[names(so)] = so
   }
 
+  if (!is.null(am.name)) opts$name = am.name
+  if (is.null(opts[["name"]])) {
+    if (!is.null(file)) {
+      opts$name = tools::file_path_sans_ext(basename(file))
+    }
+  }
+  if (!is.null(am.id)) opts$id = am.id
+  if (is.null(opts[["id"]])) opts$id = opts$name
+
   # special treatment for rtutor
   if (isTRUE(opts$rtutor)) {
     library(RTutor3)
@@ -89,6 +96,10 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
 
   # now install default opts given the settings
   opts = do.call(default.armd.opts, opts)
+
+  am$am.name = opts$name
+  am$am.id = opts$id
+
 
   df = find.rmd.nested(txt, dot.levels)
   opts = add.block.default.packages.to.opts(df$type, opts)
@@ -178,6 +189,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = "armd
   am$rtutor = am$opts$rtutor
   if (am$opts$has.widgets | am$opts$rtutor) {
     library(RTutor3)
+    #restore.point("before.init.widgets")
     RTutor3::rtutor.init.widgets(am)
   }
 

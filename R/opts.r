@@ -49,6 +49,8 @@ default.armd.opts = function(
 
   add.enter.code.here = isTRUE(am.type == "rmd"),
 
+  name = "armd",
+  id = "armd",
   hide_title = if (slides) c("section","subsection") else NULL,
   ...
 ) {
