@@ -29,13 +29,13 @@ function rtAdaptSlideMargin(slideNum) {
   var id = rtSlideIds[slideNum-1];
   var slide = $("#"+id);
 
-  
+
   var old_left = parseInt($("#"+id).css('padding-left').replace('px', ''));
   var old_right = parseInt($("#"+id).css('padding-right').replace('px', ''));
   alert("current left-padding" + old_left);
 
   var oslide = document.getElementById(id);
-  
+
   var sw = oslide.scrollWidth - old_left - old_right;
   var sh = oslide.scrollHeight;
 
@@ -43,14 +43,14 @@ function rtAdaptSlideMargin(slideNum) {
   var wh = $(window).height();
   var min_pad = 0.025 * ww;
   var max_pad = 0.15 * ww;
-  
+
   var pad = (ww - sw) / 2;
   if (pad < min_pad) {
-    pad = min_pad; 
+    pad = min_pad;
   } else if (pad > max_pad) {
     pad = max_pad;
   }
-  
+
   $("#"+id).css({"padding-left": pad, "padding-right": pad});
   alert("1. slide: "+ sw +", "+ sh + " window: "+ ww +", "+ wh+" padding = " + pad);
 
@@ -63,15 +63,15 @@ function rtAdaptSlideMargin(slideNum) {
     $("#"+id).css({"padding-left": pad, "padding-right": pad});
     alert("Padding of "+ id + " adapted to " + perc_pad);
   }
-  
+
 }
 
 function rtShowSlide(slideNum) {
-  
+
   if (slideNum == rtSlideNum) return;
   rtSlideNum = slideNum;
   var id = rtSlideIds[rtSlideNum-1];
-  
+
   var slide = $("#"+id);
 
   $("#"+id).css({"display": "block", "visibility": "hidden"});
@@ -89,7 +89,7 @@ function rtWasEventForDocument(e) {
   var eclass = e.target.className;
   var pn = e.target.parentNode;
   var gpn = pn.parentNode;
-  
+
   if (tag === "BUTTON") {
     return false;
   } else {
@@ -102,11 +102,11 @@ function rtWasEventForDocument(e) {
   if (tag === "A") {
     return false;
   }
+  if (tag === "BUTTON" || tag === "IMG" || tag === "INPUT" || tag === "A") {
+    return false;
+  }
 
   if (tag === "IMG") {
-    if (tag === "BUTTON" || tag === "IMG" || tag === "INPUT" || tag === "A") {
-      return false;
-    }
     if (pn.className === "radio" || pn.className === "checkbox") {
       return false;
     }
@@ -124,7 +124,7 @@ function rtWasEventForDocument(e) {
 
 $(document).on("click", function (e) {
   if(! rtWasEventForDocument(e)) return;
-  
+
   var pageX = e.pageX;
   var ww = $( window ).width();
   if (pageX / ww <= 0.2) {
@@ -136,14 +136,14 @@ $(document).on("click", function (e) {
       rtShowSlide(rtSlideNum+1);
     }
   }
-});  
+});
 
 
 $(document).keydown(function(e) {
   if(! rtWasEventForDocument(e)) return;
-  
+
   var code = e.which;
-  
+
   if (code == 37) { // left arrow
     rtShowPrev();
     e.preventDefault(); // prevent the default action (scroll / move caret)
