@@ -17,8 +17,9 @@ showArmdAddin = function(...) {
   preview.armd.part.addin(single.part=FALSE)
 }
 
+compileArmdDocument = function(...) {
+  restore.point("compileArmdDocument")
 
-createArmdOfflineSlides = function(...) {
   library(armd)
   doc = rstudioapi::getActiveDocumentContext()
 
@@ -31,22 +32,31 @@ createArmdOfflineSlides = function(...) {
   dir = dirname(doc$path)
   setwd(dir)
   am = parse.armd(file=file, dir=dir, source.file = file)
+
+  if (isTRUE(am$rtutor)) {
+    preview.armd.part.addin(am=am,...)
+  } else {
+    createArmdOfflineSlides(am, doc)
+  }
+}
+
+createArmdOfflineSlides = function(am,doc) {
   armd.offline.html(am)
 }
 
-preview.armd.part.addin = function(single.part=TRUE,...) {
+preview.armd.part.addin = function(single.part=TRUE,...,am=NULL) {
   library(rstudioapi)
   library(armd)
   doc = rstudioapi::getActiveDocumentContext()
   restore.point("preview.armd.part.addin")
-  cat("\nView frame")
+  #cat("\nView frame")
 
   file = basename(doc$path)
   dir = dirname(doc$path)
 
   if (nchar(file)==0) {
     cat("\nRStudio has not detected your academic rmarkdown .rmd tab. Please try again!")
-    return()
+    return(invisible())
   }
 
   setwd(dir)
@@ -70,7 +80,11 @@ preview.armd.part.addin = function(single.part=TRUE,...) {
     show.line = line
   }
 
-  am = parse.armd(txt=txt, dir=dir, source.file = file, show.line=show.line, filter.line = filter.line)
+  if (is.null(am)) {
+    cat("\nparse",file)
+    am = parse.armd(txt=txt, dir=dir, source.file = file, show.line=show.line, filter.line = filter.line)
+
+  }
 
   preview = am$opts$preview
   if (identical(preview,"rstudio")) {
@@ -84,6 +98,11 @@ preview.armd.part.addin = function(single.part=TRUE,...) {
   if (isTRUE(am$rtutor)) {
     library(RTutor3)
     ps = armd.to.ps(am)
+    if (isTRUE(am$opts$just.rmd)) {
+      cat("\nRTutor rmd files have been created.")
+      return(invisible())
+    }
+
     app = rtutorApp(ps)
     viewApp(app,launch.browser = browser)
     return()

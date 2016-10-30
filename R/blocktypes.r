@@ -11,7 +11,7 @@ armd.block.types.df = function(...) {
     "chunk","frame","section","subsection","subsubsection",
     "exercise",
     "preknit","precompute","portrait", "image", "solved",
-    "column","row","info","note","award","references",
+    "column","row","info","note","references",
     "show","notest","show_notest","hint","test","test_args",
     "settings","css","head","layout",
     "toc", "figure",
@@ -21,7 +21,7 @@ armd.block.types.df = function(...) {
   )
   parent.types = c("frame","row", "column","chunk","preknit","precompute","knit","compute","info","note", "section","subsection","exercise")
 
-  container.types = c("award","frame","info","note", "section","subsection","exercise","row", "column")
+  container.types = c("frame","info","note", "section","subsection","exercise","row", "column")
 
   dot.levels = c(
     armd = -1000,

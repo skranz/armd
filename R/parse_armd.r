@@ -106,7 +106,6 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
 
   # priority opts overwrite settings
   opts[names(priority.opts)] = priority.opts
-
   set.armd.opts(opts)
   am$opts = opts
 
@@ -180,8 +179,10 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
   am$init.env = new.env(parent=parent.env(globalenv()))
   am$pre.env = new.env(parent=am$init.env)
 
-  if (isTRUE(am$opts$use.memoise))
+  if (isTRUE(am$opts$use.memoise)) {
     am$memoise.fun.li = memoise.fun.li(am$opts$memoise.funs)
+    copy.into.env(dest=am$init.env, source=am$memoise.fun.li)
+  }
 
   source.extra.code.file(extra.code.file = extra.code.file, am)
 
@@ -189,7 +190,6 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
   am$rtutor = am$opts$rtutor
   if (am$opts$has.widgets | am$opts$rtutor) {
     library(RTutor3)
-    #restore.point("before.init.widgets")
     RTutor3::rtutor.init.widgets(am)
   }
 
@@ -894,26 +894,6 @@ armd.parse.info = function(bi,am) {
 armd.parse.note = function(bi,am) {
   restore.point("armd.parse.note")
   armd.parse.as.collapse(bi,am)
-}
-
-armd.parse.award = function(bi,am) {
-  restore.point("armd.parse.award")
-  br = am$bdf[bi,]
-
-  args = parse.block.args(arg.str = am$bdf$arg.str[[bi]])
-  award.name = args$name
-
-  res = get.children.and.fragments.ui.list(bi,am, keep.null=FALSE)
-  out.rmd = merge.lines(c("---\n### Award",res$out.rmd,"---"))
-  rmd.li = list(shown.rmd="",sol.rmd="",out.rmd=out.rmd)
-  content.ui=res$ui.li
-  obj = list(award.bi =bi, award.name=award.name, html=as.character(tagList(content.ui)), txt = res$out.rmd)
-
-  title = paste0("Award: ",award.name)
-
-  inner.ui = tagList(br(),shinyBS::bsCollapse(id = paste0("award_collapse_",bi), myCollapsePanel(title=title,header.style="background-color: #DFC463;box-shadow: 2px 2px 2px #888888;",content.ui)))
-
-  armd.parse.as.container(bi=bi,am=am,args = args, inner.ui=inner.ui,rmd.li = rmd.li,highlight.code = TRUE, title = NULL, is.hidden = TRUE)
 }
 
 armd.parse.references = function(bi,am) {

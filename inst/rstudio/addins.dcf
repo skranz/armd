@@ -10,5 +10,5 @@ Interactive: true
 
 Name: armd: Compile Document
 Description: To be called in academic rmarkdown .Rmd file
-Binding: createArmdOfflineSlides
+Binding: compileArmdDocument
 Interactive: true

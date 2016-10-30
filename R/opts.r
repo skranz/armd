@@ -3,6 +3,7 @@ default.armd.opts = function(
   # packages that define blocks
   block.packages = c("armd"),
 
+  rtutor = FALSE,
   am.type = "shiny",
 
   # slides
@@ -64,6 +65,7 @@ default.knit.print.params = function(html.data.frame=TRUE,table.max.rows=40, rou
 
 set.armd.opts = function(opts) {
   options(.armd.OPTS=opts)
+  options(.RTUTOR.OPTS=opts)
 }
 
 # Default problem set options
