@@ -111,9 +111,21 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
 
   make.am.block.types.df(am, opts)
 
+  # check for undefined block types
+  undefined = which(is.na(match(df$type,am$bt.df$type)))
+  if (length(undefined)>0) {
+    msg = paste0("Your Rmd file contains undefined blocks: ", paste0(unique(df$type[undefined]), collapse=", "),"\n\n")
+    sources = sapply(undefined, function(bi) {
+      msg = merge.lines(block.source.msg(bi,am=am,bdf=df))
+    })
+    msg = paste0(msg, "\n", paste0("unkown block '", df$type[undefined], "' in ", sources,collapse="\n"))
+    stop(msg,.call=NULL)
+  }
+
 
   # remove blocks inside blocks that shall be removed
   remove.inner.blocks = get.bt(df$type,am)$remove.inner.blocks
+  remove.inner.blocks[is.na(remove.inner.blocks)] = FALSE
   lev.par = get.levels.parents(df$level,remove.inner.blocks)
   del.rows = which(lev.par>0)
   df = del.rows.and.adapt.refs(df,del.rows,ref.cols = "parent")
@@ -152,6 +164,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
   )
   bdf = cbind(bdf, select(get.bt(bdf$type,am),-type,-remove.inner.blocks))
 
+  bdf$parse.inner.block[is.na(bdf$parse.inner.block)] = TRUE
   lev.par = get.levels.parents(bdf$level,!bdf$parse.inner.block)
   bdf$parse.block = lev.par == 0
 
@@ -291,10 +304,10 @@ source.line.to.bi = function(line,bdf=am$bdf,am, source=1,type=NULL) {
   bi
 }
 
-block.source.msg = function(bi, am) {
+block.source.msg = function(bi, am, bdf = am$bdf) {
   restore.point("block.source.msg")
 
-  br = am$bdf[bi,]
+  br = bdf[bi,]
   lines = br$start:br$end
   df = data_frame(line=am$txt.lines[lines],source=am$txt.source[lines])
   sdf = summarise(group_by(df, source), start=min(line),end=max(line))
@@ -486,6 +499,9 @@ armd.parse.block = function(bi,am) {
   type = bdf$type[[bi]]
   fun.name = paste0("armd.parse.",type)
   pkg =get.bt(type, am)$package
+  if (is.na(pkg)) {
+    stop("Unknown block type '", type,"'.")
+  }
 
   fun.call = parse(text=paste0(pkg,"::armd.parse.",type,"(bi,am)"))
   res = eval(fun.call)
