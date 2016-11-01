@@ -3,6 +3,8 @@ default.armd.opts = function(
   # packages that define blocks
   block.packages = c("armd"),
 
+  newline.code = "§NL§",
+  rmd.modes = c("rmd","tex"),
   rtutor = FALSE,
   am.type = "shiny",
 

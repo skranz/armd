@@ -160,7 +160,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
     container.ind = 0,
     div.id = "",
     output.id=  "",
-    out.rmd = "", sol.rmd="",shown.rmd=""
+    rmd = vector("list", NROW(bdf))
   )
   bdf = cbind(bdf, select(get.bt(bdf$type,am),-type,-remove.inner.blocks))
 
@@ -266,6 +266,8 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
   am$bdf$parent_container = get.levels.parents(am$bdf$level, am$bdf$is.container)
 
   am$navbar.ui = armd.navbar(am=am, nav.levels = opts$nav.levels)
+
+  make.am.rmd(am=am)
 
   # tests
   ids = am$bdf$id
@@ -551,7 +553,7 @@ armd.parse.chunk = function(bi,am, opts=armd.opts()) {
 
   code = str[-c(1,length(str))]
   mstr = merge.lines(str)
-  am$bdf[bi,c("shown.rmd","sol.rmd","out.rmd")] = mstr
+  armd.set.rmd(bi, list(rmd=mstr))
   args$comment = NA
   rmd = code.to.rmd.chunk(code,args=args)
   ui = knit.rmd(rmd,envir = am$pre.env,out.type="shiny")
@@ -587,7 +589,7 @@ armd.parse.preknit = function(bi,am) {
   res = get.children.and.fragments.ui.list(bi,am, keep.null=FALSE, children=children)
   ui.li = res$ui.li
   set.bdf.ui(ui.li,bi,am)
-  set.bdf.rmd(bi=bi,am = am,res$shown.rmd,res$sol.rmd,res$out.rmd)
+  armd.set.rmd(bi=bi, am=am, rmd=res$rmd, newline=FALSE)
   return()
 
   # old code knit everything
@@ -757,7 +759,7 @@ armd.parse.as.section = function(bi, am, type="section", rmd.prefix="# Section")
   type = am$bdf$stype[[bi]]
   if (isTRUE(type %in% am$opts$hide_title)) title = NULL
 
-  armd.parse.as.container(bi,am,args = args, rmd.prefix=paste0(rmd.prefix," ",title), title = title, anchor=paste0("part",bi))
+  armd.parse.as.container(bi,am,args = args, rmd.prefix=paste0(rmd.prefix," ",title,"\n"), title = title, anchor=paste0("part",bi))
   if (is.null(args$title.offset)) args$title.offset=0
   button.label = str.left.of(args$name," --")
   am$bdf$obj[[bi]] = list(title = args$name,button.label = button.label, args=args)
@@ -765,10 +767,10 @@ armd.parse.as.section = function(bi, am, type="section", rmd.prefix="# Section")
 }
 
 
-armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd.li=NULL, highlight.code = is.widget, is.widget=get.bt(am$bdf$type[[bi]],am)$is.widget, rmd.head=NULL, rmd.prefix="", rmd.postfix="", ui.fun=NULL, title = am$bdf$obj[[bi]]$title, is.hidden = am$bdf$type[[bi]] %in% am$hidden.container.types, extra.class = "", only.children.ui = FALSE, anchor=NULL) {
+armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd=NULL, highlight.code = is.widget, is.widget=get.bt(am$bdf$type[[bi]],am)$is.widget, rmd.head=NULL, rmd.prefix="", rmd.postfix="", ui.fun=NULL, title = am$bdf$obj[[bi]]$title, is.hidden = am$bdf$type[[bi]] %in% am$hidden.container.types, extra.class = "", only.children.ui = FALSE, anchor=NULL) {
   restore.point("armd.parse.as.container")
   bdf = am$bdf; br = bdf[bi,];
-  if (is.null(inner.ui) | is.null(rmd.li)) {
+  if (is.null(inner.ui) | is.null(rmd)) {
     if (only.children.ui) {
       res = get.children.ui.list(bi,am,keep.null=TRUE, layout.txt = args$layout.txt)
     } else {
@@ -776,7 +778,7 @@ armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd.li=NUL
     }
     if (is.null(inner.ui))
       inner.ui = res$ui.li
-    if (is.null(rmd.li)) rmd.li = res
+    if (is.null(rmd)) rmd = res$rmd
   }
   if (!is.null(ui.fun)) {
     inner.ui = ui.fun(inner.ui)
@@ -806,7 +808,7 @@ armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd.li=NUL
     inner.ui = list(header, inner.ui)
   }
 
-  set.bdf.rmd(bi, am, rmd.li=rmd.li, rmd.prefix=rmd.prefix, rmd.postfix=rmd.postfix)
+  armd.set.rmd(bi=bi, am=am, rmd=rmd, rmd.prefix=rmd.prefix, rmd.postfix=rmd.postfix)
 
   # A widget will be loaded in an uiOutput
   if (is.widget) {
@@ -884,7 +886,8 @@ parse.container.inner.ui.and.rmd = function(bi, am) {
   is.child = !res$is.frag
 
   title = args$name
-  set.bdf.rmd(bi, am, rmd.li=res,rmd.prefix = title)
+
+  armd.set.rmd(bi=bi, am=am, rmd=rmd, rmd.prefix = title)
 
   if (is.null(args$title.offset)) args$title.offset=0
   if (!is.null(args$name)) {
@@ -935,24 +938,13 @@ armd.parse.as.collapse  =  function(bi,am,title.prefix=NULL, title=NULL, rmd.hea
   if (is.null(title)) title = str.trim(paste0(title.prefix, " ",args$name))
   if (is.null(title)) title = bs$type[[bi]]
   inner.ui = make.armd.collapse.note(id=paste0(am$bdf$type[[bi]],"_collapse_",bi),content=ui.li, title=title)
-  rmd.li = list(
-    shown.rmd = merge.lines(c(rmd.head,res$shown.rmd,rmd.foot)),
-    sol.rmd  = merge.lines(c(rmd.head,res$sol.rmd,rmd.foot)),
-    out.rmd = merge.lines(c(rmd.head,res$out.rmd,rmd.foot))
-  )
-  armd.parse.as.container(bi,am,args=args, inner.ui=inner.ui, rmd.li=rmd.li,...)
+
+  rmd = lapply(res$rmd, function(txt) {
+    merge.lines("",rmd.head,txt,rmd.foot)
+  })
+  armd.parse.as.container(bi,am,args=args, inner.ui=inner.ui, rmd=rmd,...)
 }
 
-
-set.bdf.rmd = function(bi, am, shown.rmd=rmd.li$shown.rmd, sol.rmd=rmd.li$sol.rmd, out.rmd = rmd.li$out.rmd, rmd.li=NULL, rmd.prefix="", rmd.postfix) {
-  restore.point("set.bdf.rmd")
-
-  am$bdf[bi,c("shown.rmd","sol.rmd","out.rmd")] = c(
-    merge.lines(c(rmd.prefix,unlist(shown.rmd),rmd.postfix)),
-    merge.lines(c(rmd.prefix,unlist(sol.rmd),rmd.postfix)),
-    merge.lines(c(rmd.prefix,unlist(out.rmd),rmd.postfix))
-  )
-}
 
 get.bi.am.str = function(bi,am, remove.header.footer=TRUE) {
   restore.point("get.bi.am.str")
@@ -1015,16 +1007,16 @@ get.children.ui.list = function(bi,am,bdf=am$bdf, keep.null=TRUE, empty.as.null=
   ui = lapply(which(children), function(ind) {
     bdf$ui[[ind]]
   })
-  sol.rmd = bdf$sol.rmd[children]
-  shown.rmd = bdf$shown.rmd[children]
-  out.rmd = bdf$out.rmd[children]
+
+  rmd.li =bdf$rmd[children]
+  rmd =armd.bind.rmd.li(rmd.li)
 
   if (!keep.null) {
     null.ui = sapply(ui, is.null)
     ui = ui[!is.null(ui)]
   }
   names(ui) = NULL
-  list(ui.li=ui, sol.rmd=sol.rmd,shown.rmd=shown.rmd,out.rmd=out.rmd, is.frag=rep(FALSE,length(ui)))
+  list(ui.li=ui, rmd=rmd, is.frag=rep(FALSE,length(ui)))
 }
 
 
@@ -1034,7 +1026,10 @@ get.children.and.fragments.ui.list = function(bi,am,bdf=am$bdf, keep.null=TRUE, 
   res = get.non.children.fragments(bi,am, child.ind = which(children), layout.txt=layout.txt)
   is.frag = res$is.frag
   is.child = !is.frag
-  ui = sol.rmd = shown.rmd = out.rmd = res$frag
+  ui = res$frag
+  rmd.li = lapply(res$frag, function(txt) {
+    armd.expand.rmd.modes(txt,am=am)
+  })
 
   ui[is.frag] = lapply(ui[is.frag], function(txt) {
     fragment.to.html(txt=txt, bi=bi, am=am)
@@ -1043,10 +1038,7 @@ get.children.and.fragments.ui.list = function(bi,am,bdf=am$bdf, keep.null=TRUE, 
   ui[is.child] = lapply(which(children), function(ind) {
     bdf$ui[[ind]]
   })
-  sol.rmd[is.child] = bdf$sol.rmd[children]
-  shown.rmd[is.child] = bdf$shown.rmd[children]
-  out.rmd[is.child] = bdf$out.rmd[children]
-
+  rmd.li[is.child] = bdf$rmd[children]
 
   if (!keep.null) {
     null.ui = sapply(ui, is.null)
@@ -1054,7 +1046,8 @@ get.children.and.fragments.ui.list = function(bi,am,bdf=am$bdf, keep.null=TRUE, 
     is.frag = is.frag[null.ui]
   }
   names(ui) = NULL
-  list(ui.li=ui, sol.rmd=sol.rmd,shown.rmd=shown.rmd,out.rmd=out.rmd, is.frag=is.frag)
+  rmd = armd.bind.rmd.li(rmd.li)
+  list(ui.li=ui, rmd=rmd, is.frag=is.frag)
 }
 
 get.child.and.fragment.txt.li = function(bi,am,bdf=am$bdf, child.ind = which(bdf$parent == bi), keep.header.footer=FALSE) {
@@ -1133,13 +1126,9 @@ get.non.children.fragments.from.layout.txt = function(bi,am,bdf=am$bdf, child.in
   list(frags = frag.li, is.frag=is.frag)
 }
 
-
-
 make.am.ui = function(am, bdf=am$bdf) {
   rows = which(bdf$parent == 0)
-
   ui.li = bdf$ui[rows]
-
 }
 
 default.navbar.link.fun = function(title, level, bi=NULL) {
