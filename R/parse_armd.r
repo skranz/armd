@@ -776,8 +776,7 @@ armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd=NULL, 
     } else {
       res = get.children.and.fragments.ui.list(bi,am,keep.null=TRUE, layout.txt = args$layout.txt)
     }
-    if (is.null(inner.ui))
-      inner.ui = res$ui.li
+    if (is.null(inner.ui)) inner.ui = res$ui.li
     if (is.null(rmd)) rmd = res$rmd
   }
   if (!is.null(ui.fun)) {
@@ -1095,7 +1094,7 @@ get.non.children.fragments = function(bi,am,bdf=am$bdf, child.ind = which(bdf$pa
 
   frag.li = lapply(1:NROW(pos), function(row) {
     if (!is.frag[row]) return(NULL)
-    am$txt[pos[row,1]:pos[row,2]]
+    merge.lines(am$txt[pos[row,1]:pos[row,2]])
   })
   list(frags = frag.li, is.frag=is.frag)
 }
@@ -1121,7 +1120,7 @@ get.non.children.fragments.from.layout.txt = function(bi,am,bdf=am$bdf, child.in
 
   frag.li = lapply(1:NROW(pos), function(row) {
     if (!is.frag[row]) return(NULL)
-    layout.txt[pos[row,1]:pos[row,2]]
+    merge.lines(layout.txt[pos[row,1]:pos[row,2]])
   })
   list(frags = frag.li, is.frag=is.frag)
 }
