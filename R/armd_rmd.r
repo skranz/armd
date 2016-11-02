@@ -2,6 +2,11 @@
 armd.set.rmd = function(bi, rmd=NULL, am = get.am(), rmd.prefix="", rmd.postfix="", newline=TRUE,opts=am$opts, modes = opts$rmd.modes) {
   restore.point("armd.set.rmd")
   #stop()
+  if (length(rmd)==0) {
+    am$bdf$rmd[[bi]] = list()
+    return()
+  }
+
   rmd = armd.expand.rmd.modes(rmd,modes=modes)
 
   nl = if (newline) opts$newline.code else NULL
@@ -42,6 +47,7 @@ set.bdf.rmd = function(bi, am, shown.rmd=rmd.li$shown.rmd, sol.rmd=rmd.li$sol.rm
 
 armd.bind.rmd.li = function(rmd.li) {
   restore.point("armd.bind.rmd.li")
+  rmd.li = rmd.li[sapply(rmd.li, length)>0]
 
   df = as_data_frame(data.table::rbindlist(rmd.li))
   rmd = lapply(df, paste0, collapse="")

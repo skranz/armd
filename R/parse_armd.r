@@ -246,8 +246,8 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
   for (bi in binds) {
     #restore.point("inner.make.am")
     if (catch.errors) {
-      res = armd.parse.block(bi,am)
-      #res = try(armd.parse.block(bi,am), silent=TRUE)
+      #res = armd.parse.block(bi,am)
+      res = try(armd.parse.block(bi,am), silent=TRUE)
       if (is(res,"try-error")) {
         br = am$bdf[bi,]
         source = block.source.msg(bi=bi,am=am)
@@ -555,10 +555,26 @@ armd.parse.chunk = function(bi,am, opts=armd.opts()) {
   mstr = merge.lines(str)
   armd.set.rmd(bi, list(rmd=mstr))
   args$comment = NA
-  rmd = code.to.rmd.chunk(code,args=args)
-  ui = knit.rmd(rmd,envir = am$pre.env,out.type="shiny")
-  ui = tagList(ui, highlight.code.script())
-  set.bdf.ui(ui, bi,am)
+
+  chunk.preknit = isTRUE(args$preknit) | isTRUE(br$parent_info) | isTRUE(br$parent_preknit) | isTRUE(opts$chunk.preknit)
+
+  chunk.precompute = (br$parent_precompute >0 | isTRUE(args$precompute)) & !chunk.preknit
+
+  if (chunk.precompute) {
+    # precompute does not show chunk
+    restore.point("parse.precompute.chunk")
+    am$bdf$stype[[bi]] = "precompute_chunk"
+    expr = parse(text=code)
+    res = eval(expr,am$pre.env)
+  } else {
+    # knitted chunk
+    rmd = code.to.rmd.chunk(code,args=args)
+    ui = knit.rmd(rmd,envir = am$pre.env,out.type="shiny")
+    ui = tagList(ui, highlight.code.script())
+    set.bdf.ui(ui, bi,am)
+  }
+
+
 }
 
 code.to.rmd.chunk = function(code, args, label=args$label) {
@@ -601,6 +617,7 @@ armd.parse.preknit = function(bi,am) {
 }
 
 armd.parse.precompute = function(bi,am) {
+  restore.point("armd.parse.precompute")
   # all work is done in the chunks inside
   armd.parse.as.container(bi,am)
 
@@ -923,11 +940,10 @@ armd.parse.references = function(bi,am) {
   armd.parse.as.collapse(bi,am, title=title)
 }
 
-armd.parse.as.collapse  =  function(bi,am,title.prefix=NULL, title=NULL, rmd.head=paste0("### ", title), rmd.foot="---",...) {
+armd.parse.as.collapse  =  function(bi,am,title.prefix=NULL, title=args$name, rmd.head=paste0("### ", title), rmd.foot="---",args=get.bi.args(bi=bi,am=am,allow.unquoted.title=TRUE), ...) {
   restore.point("armd.parse.as.collapse")
   #stop()
   bdf = am$bdf; br = bdf[bi,];
-  args = parse.block.args(arg.str = br$arg.str,allow.unquoted.title=TRUE)
   children = bdf$parent == bi
   res = get.children.and.fragments.ui.list(bi,am, children=children, keep.null=TRUE)
 
@@ -939,7 +955,7 @@ armd.parse.as.collapse  =  function(bi,am,title.prefix=NULL, title=NULL, rmd.hea
   inner.ui = make.armd.collapse.note(id=paste0(am$bdf$type[[bi]],"_collapse_",bi),content=ui.li, title=title)
 
   rmd = lapply(res$rmd, function(txt) {
-    merge.lines("",rmd.head,txt,rmd.foot)
+    merge.lines(c("",rmd.head,txt,rmd.foot))
   })
   armd.parse.as.container(bi,am,args=args, inner.ui=inner.ui, rmd=rmd,...)
 }
@@ -1007,7 +1023,10 @@ get.children.ui.list = function(bi,am,bdf=am$bdf, keep.null=TRUE, empty.as.null=
     bdf$ui[[ind]]
   })
 
-  rmd.li =bdf$rmd[children]
+  inds = which(children)
+
+  rmd.li=bdf$rmd[children]
+
   rmd =armd.bind.rmd.li(rmd.li)
 
   if (!keep.null) {
@@ -1170,13 +1189,16 @@ del.rows.and.adapt.refs = function(df, del.rows, ref.cols=NULL) {
   df
 }
 
-get.bi.inner.txt = function(bi,txt = am$txt, am) {
+get.bi.inner.txt = function(bi,txt = am$txt, am=get.am()) {
   restore.point("get.bi.inner.txt")
   bdf = am$bdf
   has.footer = bdf$form[[bi]] != "dotblock"
   lines = (bdf$start[bi]+1):(bdf$end[bi]-has.footer)
   am$txt[lines]
+}
 
+get.bi.args = function(bi, am=get.am(),allow.unquoted.title=FALSE,...) {
+  parse.block.args(arg.str = am$bdf$arg.str[[bi]],allow.unquoted.title=allow.unquoted.title,...)
 }
 
 error.in.bi = function(err.msg, bi,line= paste0(am$bdf$start[bi])[1], just.start.line=TRUE, am=get.am()) {

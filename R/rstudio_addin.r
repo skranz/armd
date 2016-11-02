@@ -41,6 +41,8 @@ compileArmdDocument = function(...) {
 }
 
 createArmdOfflineSlides = function(am,doc) {
+  restore.point("createArmdOfflineSlides")
+
   armd.offline.html(am)
 }
 

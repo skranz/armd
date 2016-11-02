@@ -55,7 +55,7 @@ make.am.block.types.df = function(am,opts=am$opts) {
     df = call.from.pkg(pkg,"armd.block.types.df")
 
     df$package.pos = i
-    df = add.cols.if.missing(df, is.widget=FALSE, is.parent=FALSE, parse.inner.blocks=TRUE, remove.inner.blocks=FALSE, is.container=FALSE, dot.level=NA)
+    df = add.cols.if.missing(df, is.widget=FALSE, is.parent=FALSE, parse.inner.blocks=TRUE, remove.inner.blocks=FALSE, is.container=FALSE, dot.level=NA, arg.li = vector("list",NROW(df)))
     df = df[,c("type","package","package.pos", "is.widget","is.parent","is.container", "parse.inner.blocks","remove.inner.blocks", "arg.li")]
     df
   })

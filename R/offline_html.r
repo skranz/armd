@@ -115,6 +115,7 @@ inline.external.html = function(html, h=NULL, inline.script=TRUE, inline.css=TRU
   rows = !(res$path %in% del.path)
   for (node in nodes[!rows]) removeNodes(node)
 
+  restore.point("dhfgdhfgzuegfzu")
   nodes = nodes[rows]
   dirs = res$dir[rows]
   paths = res$path[rows]
@@ -184,7 +185,7 @@ inline.external.html = function(html, h=NULL, inline.script=TRUE, inline.css=TRU
       next
     }
     if (just.delete) next
-    restore.point("nhfbrbfrbf")
+    #restore.point("nhfbrbfrbf")
 
     code = merge.lines(c(
       paste0("\n /* INLINED ",file,"*/ \n"),
@@ -197,8 +198,6 @@ inline.external.html = function(html, h=NULL, inline.script=TRUE, inline.css=TRU
 
     replace.script.node(node,code, attr=c(class=paste0("inlined_script inlined_script_", file_class)))
   }
-
-
 
   xml2html(h)
 }
@@ -216,8 +215,6 @@ findShinyRessourceDir = function(src) {
   # get path name
   names = str.left.of(src,"/")
 
-
-
   # distinguish local and web ressources
   is.web = str.starts.with(names,"http") & has.substr(names,":")
 
@@ -231,8 +228,10 @@ findShinyRessourceDir = function(src) {
   dirs[names=="shared"] = paste0(path.package("shiny"),"/www/shared")
   dirs = file.path(dirs,right)
   src[!is.web] = dirs
+  path = src
+  path[!is.web] = names
 
-  list(dir=src, is.web =is.web, path=names)
+  list(dir=src, is.web =is.web, path=path)
 }
 
 
