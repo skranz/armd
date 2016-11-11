@@ -14,14 +14,15 @@ armd.block.types.df = function(...) {
     "column","row","info","note","references",
     "show","notest","show_notest","hint","test","test_args",
     "settings","css","head","layout",
-    "toc", "figure",
+    "toc", "figure", "spoilerNote",
     "gv",
+    "tab",
     "theorem","assumption","condition","fact","conjecture",
     "proposition","proof","lemma","remark"
   )
   parent.types = c("frame","row", "column","chunk","preknit","precompute","knit","compute","info","note", "section","subsection","exercise")
 
-  container.types = c("frame","info","note", "section","subsection","exercise","row", "column")
+  container.types = c("frame","info","note","spoilerNote", "section","subsection","exercise","row", "column")
 
   dot.levels = c(
     armd = -1000,

@@ -111,6 +111,13 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
 
   make.am.block.types.df(am, opts)
 
+  # remove blocks inside blocks that shall be removed
+  remove.inner.blocks = get.bt(df$type,am)$remove.inner.blocks
+  remove.inner.blocks[is.na(remove.inner.blocks)] = FALSE
+  lev.par = get.levels.parents(df$level,remove.inner.blocks)
+  del.rows = which(lev.par>0)
+  df = del.rows.and.adapt.refs(df,del.rows,ref.cols = "parent")
+
   # check for undefined block types
   undefined = which(is.na(match(df$type,am$bt.df$type)))
   if (length(undefined)>0) {
@@ -121,15 +128,6 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
     msg = paste0(msg, "\n", paste0("unkown block '", df$type[undefined], "' in ", sources,collapse="\n"))
     stop(msg,.call=NULL)
   }
-
-
-  # remove blocks inside blocks that shall be removed
-  remove.inner.blocks = get.bt(df$type,am)$remove.inner.blocks
-  remove.inner.blocks[is.na(remove.inner.blocks)] = FALSE
-  lev.par = get.levels.parents(df$level,remove.inner.blocks)
-  del.rows = which(lev.par>0)
-  df = del.rows.and.adapt.refs(df,del.rows,ref.cols = "parent")
-
 
 
 
@@ -266,6 +264,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
   am$bdf$parent_container = get.levels.parents(am$bdf$level, am$bdf$is.container)
 
   am$navbar.ui = armd.navbar(am=am, nav.levels = opts$nav.levels)
+
 
   make.am.rmd(am=am)
 
@@ -635,6 +634,27 @@ armd.parse.gv = function(bi, am) {
   set.bdf.ui(ui,bi,am)
 }
 
+armd.parse.tab = function(bi, am) {
+  restore.point("armd.parse.tab")
+
+  txt = get.bi.inner.txt(bi,am=am)
+  args = get.bi.args(bi=bi, am=am)
+
+  sep = first.non.null(args[["sep"]],am$opts[["tab.sep"]],",")
+  bg = first.non.null(args[["bg"]],am$opts[["tab.bg"]],"#fff")
+  line.end = first.non.null(args[["\\"]],am$opts[["tab.line.end"]],"\\")
+
+  if (nchar(line.end)>0) {
+    rows = str.ends.with(txt, line.end)
+    txt[rows] = substring(txt[rows],1,nchar(txt[rows])-nchar(line.end))
+  }
+
+  df = read.csv(textConnection(txt),check.names=FALSE,sep=sep)
+
+  ui = div(style="margin: auto",HTML(html.table(df,bg.color = bg, table.style="margin: auto;", table.class="")))
+  set.bdf.ui(ui=ui, bi=bi,am=am)
+}
+
 armd.parse.figure = function(bi,am) {
   restore.point("armd.parse.figure")
   bdf = am$bdf; br = bdf[bi,];
@@ -703,15 +723,17 @@ armd.parse.image = function(bi,am, download.image=TRUE) {
     has.file = FALSE
   }
   wh = NULL
-  if (!is.null(args$width)) wh = paste0(wh," width ='",args$width,"'")
-  if (!is.null(args$height)) wh = paste0(wh," height ='",args$height,"'")
+  #if (!is.null(args$width)) wh = paste0(wh," width ='",args$width,"'")
+  #if (!is.null(args$height)) wh = paste0(wh," height ='",args$height,"'")
+
+  style = paste0(names(args),": ",args,collapse="; ")
 
   if (has.file) {
-    html = paste0('<img src=figure/',args$file,wh,' >')
+    html = paste0('<img style="',style,'" src=figure/',args$file,wh,' >')
   } else if (!is.null(args$url)) {
-    html = paste0('<img src=',args$url,wh,'>')
+    html = paste0('<img style="',style,'"  src=',args$url,wh,'>')
   } else {
-    html('<p>...figure here...</p>')
+    html = '<p>...figure here...</p>'
   }
   set.bdf.ui(HTML(html),bi,am)
 }
@@ -931,6 +953,12 @@ armd.parse.note = function(bi,am) {
   armd.parse.as.collapse(bi,am)
 }
 
+
+armd.parse.spoilerNote = function(bi,am) {
+  restore.point("armd.parse.spoiler")
+  armd.parse.as.collapse(bi,am, content.wrapper=function(...) div(class="spoilerNote",...))
+}
+
 armd.parse.references = function(bi,am) {
   restore.point("references.block.render")
   title = "References"
@@ -940,7 +968,7 @@ armd.parse.references = function(bi,am) {
   armd.parse.as.collapse(bi,am, title=title)
 }
 
-armd.parse.as.collapse  =  function(bi,am,title.prefix=NULL, title=args$name, rmd.head=paste0("### ", title), rmd.foot="---",args=get.bi.args(bi=bi,am=am,allow.unquoted.title=TRUE), ...) {
+armd.parse.as.collapse  =  function(bi,am,title.prefix=NULL, title=args$name, rmd.head=paste0("### ", title), rmd.foot="---",args=get.bi.args(bi=bi,am=am,allow.unquoted.title=TRUE),content.wrapper=NULL, ...) {
   restore.point("armd.parse.as.collapse")
   #stop()
   bdf = am$bdf; br = bdf[bi,];
@@ -952,6 +980,8 @@ armd.parse.as.collapse  =  function(bi,am,title.prefix=NULL, title=args$name, rm
 
   if (is.null(title)) title = str.trim(paste0(title.prefix, " ",args$name))
   if (is.null(title)) title = bs$type[[bi]]
+  if (!is.null(content.wrapper))
+    ui.li = content.wrapper(ui.li)
   inner.ui = make.armd.collapse.note(id=paste0(am$bdf$type[[bi]],"_collapse_",bi),content=ui.li, title=title)
 
   rmd = lapply(res$rmd, function(txt) {
@@ -996,7 +1026,7 @@ set.in.bdf = function(bi,am,...) {
 }
 
 
-set.bdf.ui = function(ui,bi,am) {
+set.bdf.ui = function(ui,bi,am=get.am()) {
   am$bdf$ui[[bi]] = ui
   #am$bdf$has.ui[[bi]] = TRUE
 }

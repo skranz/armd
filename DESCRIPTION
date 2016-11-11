@@ -25,5 +25,6 @@ Depends:
     yaml,
     R.cache,
     shinyEventsUI,
-    shinyBS
+    shinyBS,
+    memoise
 RoxygenNote: 5.0.0

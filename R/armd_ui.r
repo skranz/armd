@@ -55,11 +55,12 @@ armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) 
   mcss = tags$head(tags$style(math.css()))
 
 
+  start.slide = first.non.null(am$start.slide,1)
   slide.ids = am$bdf$div.id[am$slide.bis]
   start.js = paste0('
     rtNumSlides = ', am$num.slides,';
     rtSlideIds = [', paste0('"',slide.ids,'"', collapse=","),'];
-    rtShowSlide(1);
+    rtShowSlide(',start.slide,');
     '
   )
 
