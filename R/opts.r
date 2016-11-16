@@ -55,6 +55,7 @@ default.armd.opts = function(
   name = "armd",
   id = "armd",
   hide_title = if (slides) c("section","subsection") else NULL,
+  block.libs = NULL,
   ...
 ) {
   args = c(as.list(environment()),list(...))

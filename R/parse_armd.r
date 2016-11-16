@@ -17,14 +17,14 @@ preview.armd = function(am=NULL, am.file=NULL,rmd.file=NULL,...) {
 #'
 #' @param txt the content of the sol.rmd file as text lines
 #' @param file filename of the _sol.rmd file that specifies the problem set
-#' @param am.name the name of the problem set
+#' @param name the name of the problem set
 #' @param dir the directory in which all files are found and wil be saved to
 #' @param extra.code.file the name of an r file that contains own functions that will be accessible in the problme set
 #' @param var.txt.file name of the file that contains variable descriptions (see thee vignette for an explanation of the file format)
 #' @param am.has.sol shall the sample solution be stored in the .am file. Set this option to FALSE if you use problem sets in courses and don't want to assess students the sample solution easily
 #' @param use.memoise shall functions like read.csv be memoised? Data sets then only have to be loaded once. This can make problem sets run faster. Debugging may be more complicated, however.
 #' @export
-parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL, am.id= NULL, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, ...) {
+parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am.id= NULL, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, ...) {
   restore.point("parse.armd")
 
   am = new.env()
@@ -45,7 +45,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
   if (length(txt)==1)
     txt = sep.lines(txt)
 
-  cat("\n\nParse academic rmarkdown", am.name, "...")
+  cat("\n\nParse academic rmarkdown", name, "...")
 
   #Encoding(txt) = "UTF8"
   txt = mark_utf8(txt)
@@ -75,7 +75,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
     opts[names(so)] = so
   }
 
-  if (!is.null(am.name)) opts$name = am.name
+  if (!is.null(name)) opts$name = name
   if (is.null(opts[["name"]])) {
     if (!is.null(file)) {
       opts$name = tools::file_path_sans_ext(basename(file))
@@ -97,7 +97,8 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,am.name = NULL,
   # now install default opts given the settings
   opts = do.call(default.armd.opts, opts)
 
-  am$am.name = opts$name
+  am$name = opts$name
+  #am$am.name = opts$name
   am$am.id = opts$id
 
 
@@ -1241,13 +1242,13 @@ error.in.bi = function(err.msg, bi,line= paste0(am$bdf$start[bi])[1], just.start
 }
 
 
-write.am = function(am, file.name=paste0(dir,"/",am$am.name,".am"), dir=getwd()) {
+write.am = function(am, file.name=paste0(dir,"/",am$name,".am"), dir=getwd()) {
   restore.point("write.am")
 
   suppressWarnings(saveRDS(am, file.name))
 }
 
-read.am = function(file.name=paste0(dir,"/",am.name,".am"), dir=getwd(), am.name="") {
+read.am = function(file.name=paste0(dir,"/",name,".am"), dir=getwd(), name="") {
   readRDS(file.name)
 }
 

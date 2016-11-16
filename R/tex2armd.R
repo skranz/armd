@@ -1,4 +1,16 @@
 example = function() {
+
+  setwd("D:/lehre/energieoekonomik")
+  pre.fixed = c(
+    "\\newpage","\n#. frame\n",
+    "\\lyxframe{","\\subsubsection{",
+    "\\lyxframeend{}",""
+  )
+  post.fixed = c("\\#.","#.")
+  convert.tex.to.armd("energie_3.tex", pre.fixed=pre.fixed, post.fixed=post.fixed)
+
+
+
   setwd("D:/lehre/vwl_einf")
 
   setwd("D:/libraries/armd/examples")
@@ -27,7 +39,7 @@ convert.tex.to.armd = function(input.file, pre.fixed=NULL, post.fixed=NULL) {
 
   run.pandoc(temp.input, temp.output)
 
-  txt = readLines(output, warn=FALSE)
+  txt = readLines(temp.output, warn=FALSE)
   txt = md2armd(txt)
   txt = replace.by.rules(txt, post.fixed)
   writeLines(txt, armd.output)

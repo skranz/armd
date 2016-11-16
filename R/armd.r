@@ -40,18 +40,18 @@ set.am = function(am, app=getApp()) {
 
 
 
-fetch.am = function(am = NULL, am.file=NULL, rmd.file=NULL, txt=NULL, am.name=NULL) {
+fetch.am = function(am = NULL, am.file=NULL, rmd.file=NULL, txt=NULL, name=NULL) {
   restore.point("fetch.am")
 
   if (!is.null(rmd.file)) {
     txt = readLines(rmd.file)
-    if (is.null(am.name)) {
-      am.name = tools::file_path_sans_ext(basename(rmd.file))
+    if (is.null(name)) {
+      name = tools::file_path_sans_ext(basename(rmd.file))
     }
   }
   if (!is.null(txt)) {
-    if (is.null(am.name)) am.name = "armd"
-    am = parse.armd(txt=txt, am.name=am.name)
+    if (is.null(name)) name = "armd"
+    am = parse.armd(txt=txt, name=name)
   } else if (!is.null(am.file)) {
     am = read.am(am.file)
   }

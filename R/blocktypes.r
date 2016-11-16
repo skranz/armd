@@ -48,12 +48,15 @@ make.am.block.types.df = function(am,opts=am$opts) {
   restore.point("make.am.block.type.df")
 
   bps = opts$block.packages
-  li = lapply(seq_along(bps), function(i) {
-    pkg = bps[[i]]
+  bl = opts$block.libs
+
+  packages = unique(c(bps, unlist(bl)))
+  li = lapply(seq_along(packages), function(i) {
+    pkg = packages[[i]]
     if (!require(pkg,character.only = TRUE)) {
       stop("You need to install the R package '",pkg,"' to compile this file. The package may not be on CRAN and possibly must be installed from Github. Best google the package name for installation instructions.")
     }
-    df = call.from.pkg(pkg,"armd.block.types.df")
+    df = call.from.pkg(pkg,paste0(pkg,".block.types.df"))
 
     df$package.pos = i
     df = add.cols.if.missing(df, is.widget=FALSE, is.parent=FALSE, parse.inner.blocks=TRUE, remove.inner.blocks=FALSE, is.container=FALSE, dot.level=NA, arg.li = vector("list",NROW(df)))
@@ -62,6 +65,15 @@ make.am.block.types.df = function(am,opts=am$opts) {
   })
   # all block types
   all.df = bind_rows(li)
+  for (type in names(bl)) {
+    row = which(all.df$type == type & all.df$package == bl[[type]])[1]
+    if (is.na(row)) {
+      stop(paste0("In your setting block.libs you assign the type ", type, " to the package ", bl[[type]], " but this type is not defined in that package."))
+      next
+    }
+    all.df$package.pos[[row]] = 0
+  }
+
   # only the block types with highest priority
   df = group_by(all.df, type) %>% mutate(min.pos = min(package.pos)) %>% ungroup() %>% filter(package.pos == min.pos)
 

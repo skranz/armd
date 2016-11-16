@@ -2,11 +2,11 @@ examples.offline.html = function() {
   setwd("D:/libraries/armd/examples")
   outdir = paste0(getwd(),"/figures")
 
-  am.name = "test"
+  name = "test"
 
-  rmd.file = paste0(am.name,".rmd")
-  am.file = paste0(am.name,".am")
-  html.file = paste0(am.name,".html")
+  rmd.file = paste0(name,".rmd")
+  am.file = paste0(name,".am")
+  html.file = paste0(name,".html")
 
 
   am = fetch.am(rmd.file = rmd.file)
@@ -26,7 +26,7 @@ examples.offline.html = function() {
   cat(body)
 }
 
-armd.offline.html = function(am, outfile=paste0(am$am.name,"_offline.html"),print.outfile=paste0(am$am.name,"_offline_print.html"), browse=TRUE) {
+armd.offline.html = function(am, outfile=paste0(am$name,"_offline.html"),print.outfile=paste0(am$name,"_offline_print.html"), browse=TRUE) {
   restore.point("create.offline.am")
 
   ui = armd.ui(am,add.page = FALSE)

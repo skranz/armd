@@ -2,11 +2,11 @@ examples.make.am.html = function() {
   setwd("D:/libraries/armd/examples")
   outdir = paste0(getwd(),"/figures")
 
-  am.name = "test"
+  name = "test"
 
-  rmd.file = paste0(am.name,".rmd")
-  am.file = paste0(am.name,".am")
-  html.file = paste0(am.name,".html")
+  rmd.file = paste0(name,".rmd")
+  am.file = paste0(name,".am")
+  html.file = paste0(name,".html")
 
 
   am = fetch.am(rmd.file = rmd.file)
@@ -26,10 +26,10 @@ examples.make.am.html = function() {
   app = eventsApp()
 
   tl = offline.slide.am.ui(am=am)
-  create.offline.html(tl, outfile=paste0(am.name,"_offline.html"),use.button = FALSE)
+  create.offline.html(tl, outfile=paste0(name,"_offline.html"),use.button = FALSE)
 
   tl = offline.print.slide.am.ui(am=am)
-  create.offline.html(tl, outfile=paste0(am.name,"_offline_print.html"),use.button = FALSE)
+  create.offline.html(tl, outfile=paste0(name,"_offline_print.html"),use.button = FALSE)
 }
 
 armd.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) {
