@@ -18,9 +18,9 @@ showArmdAddin = function(...) {
 }
 
 compileArmdDocument = function(...) {
+  library(armd)
   restore.point("compileArmdDocument")
 
-  library(armd)
   doc = rstudioapi::getActiveDocumentContext()
 
   file = basename(doc$path)

@@ -4,11 +4,11 @@ var rtSlideIds = [];
 var prevSlideId = "";
 
 
-$(".rtNextBtn").click(function(){
+$(".rtNextBtn, #rtNextBtn").click(function(){
   rtShowNext();
 });
 
-$(".rtPrevBtn").click(function(){
+$(".rtPrevBtn, #rtPrevBtn").click(function(){
   rtShowPrev();
 });
 
@@ -122,6 +122,10 @@ function rtWasEventForDocument(e) {
       return false;
     }
   }
+  if ($(e.target).parents('.StopClickPropagation').length) {
+    return false;
+  }
+
   return true;
 }
 

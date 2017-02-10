@@ -17,8 +17,3 @@ armd.navigate.btns = function() {
   )
   btns
 }
-
-smallButton = function(id,label, icon=NULL, size="extra-small", extra.class=id) {
-  class = paste0(c(extra.class,"btn btn-default action-button btn-xs shiny-bound-input"), collapse=" ")
-  tags$button(id=id, type="button", class=class, label)
-}
