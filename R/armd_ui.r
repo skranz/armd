@@ -44,6 +44,19 @@ armd.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) {
 
 }
 
+# Create block type specific html heads
+# E.g. some block types require some javascript or css
+armd.block.html.head = function(am) {
+  restore.point("armd.block.html.head")
+  types = unique(am$bdf$type)
+  header.funs = setdiff(unique(am$bt.df$header.fun[am$bt.df$type %in% types]),"")
+
+  li = lapply(header.funs, function(fun) {
+    do.call(fun, list(am=am))
+  })
+  tagList(li)
+}
+
 armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) {
   restore.point("armd.slide.ui")
 
@@ -73,6 +86,8 @@ armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) 
     head,
     css,
     mcss,
+    armd.block.html.head(am),
+
     #tags$style("table { max-width: 100%;}"),
     div(id="maindiv",
       content.ui
@@ -105,6 +120,7 @@ armd.page.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) {
     head,
     css,
     mcss,
+    armd.block.html.head(am),
     div(id="maindiv",
       content.ui
     )

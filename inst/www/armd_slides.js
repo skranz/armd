@@ -125,6 +125,9 @@ function rtWasEventForDocument(e) {
   if ($(e.target).parents('.StopClickPropagation').length) {
     return false;
   }
+  if ($(e.target).parents('.form-group').length) {
+    return false;
+  }
 
   return true;
 }
@@ -138,7 +141,7 @@ $(document).on("click", function (e) {
     if (rtSlideNum > 1) {
       rtShowSlide(rtSlideNum-1);
     }
-  } else {
+  } else if (pageX / ww >= 0.2) {
     if (rtSlideNum < rtNumSlides) {
       rtShowSlide(rtSlideNum+1);
     }

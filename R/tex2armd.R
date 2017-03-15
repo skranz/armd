@@ -1,13 +1,17 @@
 example = function() {
 
   setwd("D:/lehre/energieoekonomik")
+
+  setwd("D:/lehre/vwl_einf")
+
   pre.fixed = c(
     "\\newpage","\n#. frame\n",
     "\\lyxframe{","\\subsubsection{",
-    "\\lyxframeend{}",""
+    "\\lyxframeend{}","",
+    "\\tbf{","\\textbf{"
   )
   post.fixed = c("\\#.","#.")
-  convert.tex.to.armd("energie_3.tex", pre.fixed=pre.fixed, post.fixed=post.fixed)
+  convert.tex.to.armd("Kap2.tex", pre.fixed=pre.fixed, post.fixed=post.fixed)
 
 
 
@@ -114,5 +118,31 @@ run.pandoc = function(input,output,options="--no-wrap --atx-headers") {
   restore.point("run.pandoc")
 
   com = paste0("pandoc ", options," -o ", output," ",input)
+  system(com)
+}
+
+examples.pdf2svg = function() {
+
+  inkscape.bin = "D:/programs/Inkscape/Inkscape.exe"
+  dir = "D:/lehre/vwl_einf/figure/GrafikKap2/"
+
+  files = list.files(dir, pattern=glob2rx("*.pdf"),full.names = TRUE)
+  for (file in files) {
+    cat("\n",file)
+    try(pdf2svg(file, inkscape.bin))
+  }
+
+
+  file = "D:/lehre/vwl_einf/figure/GrafikKap2/ex19.pdf"
+
+  library(magick)
+  str(magick::magick_config())
+  img = image_read(file)
+
+}
+
+pdf2svg = function(file, inkscape.bin) {
+  svg.file = paste0(tools::file_path_sans_ext(file),".svg")
+  com = paste0(inkscape.bin," ",file," --export-plain-svg=",svg.file)
   system(com)
 }

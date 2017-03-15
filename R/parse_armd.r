@@ -243,7 +243,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
   binds = order(bdf$end, -bdf$start)
   bi = binds[1]
   for (bi in binds) {
-    #restore.point("inner.make.am")
+    restore.point("inner.make.am")
     if (catch.errors) {
       #res = armd.parse.block(bi,am)
       res = try(armd.parse.block(bi,am), silent=TRUE)
@@ -949,6 +949,13 @@ armd.parse.info = function(bi,am) {
   armd.parse.as.collapse(bi,am,title.prefix="Info")
 }
 
+
+armd.parse.box = function(bi,am) {
+  restore.point("armd.parse.box")
+  armd.parse.as.collapse(bi,am, open=TRUE)
+}
+
+
 armd.parse.note = function(bi,am) {
   restore.point("armd.parse.note")
   armd.parse.as.collapse(bi,am)
@@ -969,7 +976,7 @@ armd.parse.references = function(bi,am) {
   armd.parse.as.collapse(bi,am, title=title)
 }
 
-armd.parse.as.collapse  =  function(bi,am,title.prefix=NULL, title=args$name, rmd.head=paste0("### ", title), rmd.foot="---",args=get.bi.args(bi=bi,am=am,allow.unquoted.title=TRUE),content.wrapper=NULL, ...) {
+armd.parse.as.collapse  =  function(bi,am,title.prefix=NULL, title=args$name, rmd.head=paste0("### ", title), rmd.foot="---",args=get.bi.args(bi=bi,am=am,allow.unquoted.title=TRUE),content.wrapper=NULL, open=FALSE,...) {
   restore.point("armd.parse.as.collapse")
   #stop()
   bdf = am$bdf; br = bdf[bi,];
@@ -983,7 +990,7 @@ armd.parse.as.collapse  =  function(bi,am,title.prefix=NULL, title=args$name, rm
   if (is.null(title)) title = bs$type[[bi]]
   if (!is.null(content.wrapper))
     ui.li = content.wrapper(ui.li)
-  inner.ui = make.armd.collapse.note(id=paste0(am$bdf$type[[bi]],"_collapse_",bi),content=ui.li, title=title)
+  inner.ui = make.armd.collapse.note(id=paste0(am$bdf$type[[bi]],"_collapse_",bi),content=ui.li, title=title, open=open)
 
   rmd = lapply(res$rmd, function(txt) {
     merge.lines(c("",rmd.head,txt,rmd.foot))
@@ -1002,11 +1009,13 @@ get.bi.am.str = function(bi,am, remove.header.footer=TRUE) {
   str
 }
 
-make.armd.collapse.note = function(id, html, title="Note", content=NULL) {
+make.armd.collapse.note = function(id, html, title="Note", content=NULL, open=FALSE) {
   if (is.null(content))
     content = HTML(paste0(html, collapse="\n"))
 
-  shinyBS::bsCollapse(id =id, shinyBS::bsCollapsePanel(title=title,content))
+  #shinyBS::bsCollapse(id =id, shinyBS::bsCollapsePanel(title=title,content))
+  slimCollapsePanel(title, content, open=open, padding="5px")
+  #shinyBS::bsCollapse(id =id, shinyBS::bsCollapsePanel(title=title,content))
 
 }
 

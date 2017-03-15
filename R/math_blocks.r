@@ -23,6 +23,7 @@ parse.as.math.block = function(bi, am, use.count = TRUE, add.end="",...) {
   am$bdf$ui[[bi]] = am$bdf$inner.ui = HTML(html)
 }
 
+
 armd.parse.proposition = function(...) parse.as.math.block(...)
 
 armd.parse.theorem = function(...) parse.as.math.block(...)
