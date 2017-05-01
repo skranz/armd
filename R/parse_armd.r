@@ -24,7 +24,7 @@ preview.armd = function(am=NULL, am.file=NULL,rmd.file=NULL,...) {
 #' @param am.has.sol shall the sample solution be stored in the .am file. Set this option to FALSE if you use problem sets in courses and don't want to assess students the sample solution easily
 #' @param use.memoise shall functions like read.csv be memoised? Data sets then only have to be loaded once. This can make problem sets run faster. Debugging may be more complicated, however.
 #' @export
-parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am.id= NULL, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, ...) {
+parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am.id= NULL, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", cache.dir = file.path(dir,"cache"), plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, ...) {
   restore.point("parse.armd")
 
   am = new.env()
@@ -32,15 +32,19 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
   am$version = 0.1
   am$figure.web.dir = figure.web.dir
   am$figure.sub.dir = figure.sub.dir
-  if (!dir.exists(figure.dir)) {
+  if (!dir.exists(figure.dir))
     dir.create(figure.dir)
-  }
+  if (!dir.exists(cache.dir))
+    dir.create(cache.dir)
+
   am$Addons = list()
   am$dir = dir
   am$figure.dir = figure.dir
+  am$cache.dir = cache.dir
   am$plugins = plugins
   am$css = am$head = NULL
 
+  am$header.tags = list()
 
   if (length(txt)==1)
     txt = sep.lines(txt)
@@ -569,7 +573,13 @@ armd.parse.chunk = function(bi,am, opts=armd.opts()) {
   } else {
     # knitted chunk
     rmd = code.to.rmd.chunk(code,args=args)
-    ui = knit.rmd(rmd,envir = am$pre.env,out.type="shiny")
+    ui = knit.chunk(rmd,envir = am$pre.env,out.type="shiny", deps.action="attr")
+
+    meta = attr(ui,"knit_meta")
+    deps = render.deps.as.singletons.tags(meta, inline.local.files = TRUE)
+    am$header.tags = c(am$header.tags, deps)
+
+
     ui = tagList(ui, highlight.code.script())
     set.bdf.ui(ui, bi,am)
   }
@@ -608,12 +618,6 @@ armd.parse.preknit = function(bi,am) {
   armd.set.rmd(bi=bi, am=am, rmd=res$rmd, newline=FALSE)
   return()
 
-  # old code knit everything
-  bdf = am$bdf; br = bdf[bi,];
-  str = am$txt[(br$start+1):(br$end-1)]
-
-  ui = knit.rmd(str,envir = am$pre.env,out.type="shiny")
-  set.bdf.ui(ui,bi,am)
 }
 
 armd.parse.precompute = function(bi,am) {
