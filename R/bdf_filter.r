@@ -22,7 +22,7 @@ bdf.auto.filter.type = bdf.auto.slide.type = function(bdf,ranked.types=c("frame"
   }
 }
 
-bdf.type.filter = function(line=NULL,type.ind=NULL,bdf.ind=NULL,type=NULL, ranked.types = NULL, types.to.keep = c("precompute","armd","settings","css","head", "pane","panequiz","layout"), first.if.null=TRUE) {
+bdf.type.filter = function(line=NULL,type.ind=NULL,bdf.ind=NULL,type=NULL, ranked.types = NULL, types.to.keep = c("precompute","armd","settings","css","head", "pane","panequiz","layout","define"), first.if.null=TRUE) {
   function(bdf, te=NULL) {
     restore.point("in.bdf.type.filer")
 
@@ -50,6 +50,16 @@ bdf.type.filter = function(line=NULL,type.ind=NULL,bdf.ind=NULL,type=NULL, ranke
     keep.ind = which(keep)
 
     rows = sort(unique(c(keep.ind,bdf.ind,child.ind)))
+
+    # mark blocks that are only computed for side effects
+    # as don't show
+      # the true parent blocks must be shown
+    cols = names(bdf)[str.starts.with(names(bdf),"parent_")]
+    parent.inds = unique(c(1,as.numeric(bdf[bdf.ind,cols])))
+    dont.show = unique(setdiff(keep.ind,c(bdf.ind, child.ind, parent.inds)))
+    bdf$dont.show = FALSE
+    bdf$dont.show[dont.show] = TRUE
+
     bdf[rows,,drop=FALSE]
   }
 

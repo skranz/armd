@@ -260,7 +260,17 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
     } else {
       res = armd.parse.block(bi,am)
     }
+
+    # relevant if only some frames are shown
+    # and for blocks that are computed due
+    # to their side effects but shall not be shown
+    if (has.col(am$bdf, "dont.show")) {
+      if (am$bdf$dont.show[[bi]]) {
+        am$bdf$ui[[bi]] = tags$div(style="display: none;",am$bdf$ui[[bi]])
+      }
+    }
   }
+
   am$bdf$stype.ind = compute.value.index(am$bdf$stype)
 
   # specify containers
@@ -269,6 +279,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
   am$bdf$parent_container = get.levels.parents(am$bdf$level, am$bdf$is.container)
 
   am$navbar.ui = armd.navbar(am=am, nav.levels = opts$nav.levels)
+
 
 
   make.am.rmd(am=am)
@@ -340,7 +351,7 @@ adapt.ignore.include = function(am, txt=am$txt, source.file="main") {
   am$txt = txt
   while(changed.ig | changed.in) {
     counter = counter+1
-    changed.ig = adapt.ignore(am)
+    changed.ig = adapt.ignore(am, keep.ignore.if.included=counter==1)
     changed.in = adapt.include(am)
     if (counter > 300) {
       stop("#. include statements were nested deeper than 300 levels. Probably there is a recursion...")
@@ -349,7 +360,7 @@ adapt.ignore.include = function(am, txt=am$txt, source.file="main") {
   invisible()
 }
 
-adapt.ignore = function(am,txt=am$txt) {
+adapt.ignore = function(am,txt=am$txt, keep.ignore.if.included=TRUE) {
   restore.point("adapt.ignore")
 
   # all rows that will be deleted
@@ -362,6 +373,19 @@ adapt.ignore = function(am,txt=am$txt) {
   if (length(ig.rows)>0) {
     del.lines = c(del.lines,unlist(lapply(ig.rows, function(ig.row) df$start[ig.row]:df$end[ig.row])))
   }
+
+  # deal with ignore_if_included blocks
+  ig.rows = which(df$type=="ignore_if_included")
+  if (length(ig.rows)>0) {
+      # only remove block.start and end
+    if (keep.ignore.if.included) {
+      del.lines = c(del.lines,unlist(lapply(ig.rows, function(ig.row) c(df$start[ig.row],df$end[ig.row]))))
+    } else {
+      # remove whole block
+      del.lines = c(del.lines,unlist(lapply(ig.rows, function(ig.row) df$start[ig.row]:df$end[ig.row])))
+    }
+  }
+
 
   if (length(del.lines)==0) return(FALSE)
   del.lines =unique(del.lines)
@@ -624,7 +648,12 @@ armd.parse.precompute = function(bi,am) {
   restore.point("armd.parse.precompute")
   # all work is done in the chunks inside
   armd.parse.as.container(bi,am)
+}
 
+armd.parse.define = function(bi,am) {
+  restore.point("armd.parse.define")
+  # all work is done in the chunks inside
+  armd.parse.as.container(bi,am,is.hidden = TRUE)
 }
 
 armd.parse.gv = function(bi, am) {

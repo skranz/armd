@@ -47,6 +47,12 @@ createArmdOfflineSlides = function(am,doc) {
 }
 
 preview.armd.part.addin = function(single.part=TRUE,...,am=NULL) {
+  # preview complete document in external modus
+  if (!single.part) {
+    external.preview.armd.part.addin(single.part=single.part, ..., am=NULL)
+    return()
+  }
+
   library(rstudioapi)
   library(armd)
   doc = rstudioapi::getActiveDocumentContext()
@@ -112,4 +118,95 @@ preview.armd.part.addin = function(single.part=TRUE,...,am=NULL) {
 
   ui = armd.ui(am = am)
   view.html(ui=ui, browser=browser)
+}
+
+external.preview.armd.part.addin = function(single.part=TRUE,..., am=NULL) {
+  library(rstudioapi)
+  library(armd)
+  doc = rstudioapi::getActiveDocumentContext()
+  restore.point("external.preview.armd.part.addin")
+  #cat("\nView frame")
+
+  file = basename(doc$path)
+  dir = dirname(doc$path)
+
+  if (nchar(file)==0) {
+    cat("\nRStudio has not detected your academic rmarkdown .rmd tab. Please try again!")
+    return(invisible())
+  }
+
+  setwd(dir)
+
+  txt = doc$contents
+
+  # ignore guess
+  #guess = guess.armd.file(txt=txt)
+  #if (guess == "rmdform") {
+  #  show.rmdform(txt=txt)
+  #  return()
+  #}
+
+  range = doc$selection[[1]]$range
+  line = range$start[1]
+
+  #commandline.preview.armd.part(path=doc$path, line=line, single.part=single.part)
+  #return()
+
+  code = paste0("armd::commandline.preview.armd.part(path='",doc$path,"', line=",line,', single.part=',single.part,")")
+
+  script.bin = file.path(R.home("bin"), "R")
+  com = paste0(script.bin,' -e "',code,'"')
+  cat(com)
+  system(com,wait = FALSE)
+
+
+
+}
+
+
+
+# A function that can be called from the command line
+# to open an shiny app that that previews a script
+commandline.preview.armd.part = function(path, line, single.part=FALSE, auto.updates=TRUE) {
+  library(rstudioapi)
+  library(armd)
+  restore.point("commandline.preview.armd.part")
+  #cat("\nView frame")
+
+  # must load file
+  txt = readLines(path)
+
+  show.line = filter.line = NULL
+  if (single.part) {
+    filter.line = line
+  } else {
+    show.line = line
+  }
+
+  file = basename(path)
+  dir = dirname(path)
+
+  am = parse.armd(txt=txt, dir=dir, source.file = file, show.line=show.line, filter.line = filter.line)
+
+  browser = TRUE
+
+  if (isTRUE(am$rtutor)) {
+    library(RTutor3)
+    ps = armd.to.ps(am)
+    if (isTRUE(am$opts$just.rmd)) {
+      cat("\nRTutor rmd files have been created.")
+      return(invisible())
+    }
+
+    app = rtutorApp(ps)
+    viewApp(app,launch.browser = browser)
+    return()
+  }
+
+  ui = armd.ui(am = am)
+  if (auto.updates) {
+    start.autoupdate.armd.app(rmd.file=path, ui=ui, am=am)
+  } else {
+    view.html(ui=ui, browser=browser)
+  }
 }

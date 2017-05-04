@@ -18,10 +18,11 @@ armd.block.types.df = function(...) {
     "gv",
     "tab",
     "definition", "theorem","assumption","condition","fact","conjecture",
-    "proposition","proof","lemma","remark",
-    "box"
+    "proposition","proof","lemma","define",
+    "box",
+    "define"
   )
-  parent.types = c("frame","row", "column","chunk","preknit","precompute","knit","compute","info","note", "section","subsection","exercise")
+  parent.types = c("frame","row", "column","chunk","preknit","precompute","knit","compute","info","note", "section","subsection","exercise","required")
 
   container.types = c("frame","info","note","spoilerNote", "section","subsection","exercise","row", "column")
 
