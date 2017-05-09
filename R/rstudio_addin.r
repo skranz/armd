@@ -13,6 +13,11 @@ showArmdPartAddin = function(...) {
   preview.armd.part.addin(single.part=TRUE)
 }
 
+showArmdAutoupdateAddin = function(...) {
+  external.preview.armd.part.addin(single.part=FALSE, ...)
+}
+
+
 showArmdAddin = function(...) {
   preview.armd.part.addin(single.part=FALSE)
 }
@@ -47,11 +52,6 @@ createArmdOfflineSlides = function(am,doc) {
 }
 
 preview.armd.part.addin = function(single.part=TRUE,...,am=NULL) {
-  # preview complete document in external modus
-  if (!single.part) {
-    external.preview.armd.part.addin(single.part=single.part, ..., am=NULL)
-    return()
-  }
 
   library(rstudioapi)
   library(armd)
@@ -149,10 +149,10 @@ external.preview.armd.part.addin = function(single.part=TRUE,..., am=NULL) {
   range = doc$selection[[1]]$range
   line = range$start[1]
 
-  #commandline.preview.armd.part(path=doc$path, line=line, single.part=single.part)
+  #commandline.preview.armd(path=doc$path, line=line, single.part=single.part)
   #return()
 
-  code = paste0("armd::commandline.preview.armd.part(path='",doc$path,"', line=",line,', single.part=',single.part,")")
+  code = paste0("armd::commandline.preview.armd(path='",doc$path,"', line=",line,', single.part=',single.part,")")
 
   script.bin = file.path(R.home("bin"), "R")
   com = paste0(script.bin,' -e "',code,'"')
@@ -167,11 +167,14 @@ external.preview.armd.part.addin = function(single.part=TRUE,..., am=NULL) {
 
 # A function that can be called from the command line
 # to open an shiny app that that previews a script
-commandline.preview.armd.part = function(path, line, single.part=FALSE, auto.updates=TRUE) {
+commandline.preview.armd = function(path, line, single.part=FALSE, auto.updates=TRUE) {
   library(rstudioapi)
   library(armd)
-  restore.point("commandline.preview.armd.part")
+  restore.point("commandline.preview.armd")
   #cat("\nView frame")
+
+  refresherArmdApp(path,show.line=line)
+  return()
 
   # must load file
   txt = readLines(path)
@@ -197,16 +200,19 @@ commandline.preview.armd.part = function(path, line, single.part=FALSE, auto.upd
       cat("\nRTutor rmd files have been created.")
       return(invisible())
     }
-
-    app = rtutorApp(ps)
-    viewApp(app,launch.browser = browser)
-    return()
+  } else {
+    ps = NULL
   }
 
   ui = armd.ui(am = am)
   if (auto.updates) {
-    start.autoupdate.armd.app(rmd.file=path, ui=ui, am=am)
+    start.autoupdate.armd.app(rmd.file=path, ui=ui, am=am, ps=ps)
   } else {
-    view.html(ui=ui, browser=browser)
+    if (isTRUE(am$rtutor)) {
+      app = rtutorApp(ps)
+      viewApp(app,launch.browser = browser)
+    } else {
+      view.html(ui=ui, browser=browser)
+    }
   }
 }

@@ -3,11 +3,15 @@ parse.as.math.block = function(bi, am, use.count = TRUE, add.end="",...) {
   bdf = am$bdf; br = bdf[bi,];
   args = parse.block.args(arg.str =br$arg.str, allow.unquoted.title = TRUE)
   type = br$type
-  if (use.count) {
-    count = sum(bdf$type[seq.int(bi)] == br$type)
-    title = paste0(capitalize(br$type)," ", count,". ",args$name)
-  } else {
-    title = paste0(capitalize(br$type),". ",args$name)
+
+  title = args$title
+  if (is.null(title)) {
+    if (use.count) {
+      count = sum(bdf$type[seq.int(bi)] == br$type)
+      title = paste0(capitalize(br$type)," ", count,". ",args$name)
+    } else {
+      title = paste0(capitalize(br$type),". ",args$name)
+    }
   }
   add.br = ifelse(nchar(args$name)>0,"\n","")
   if (type == "proof") {

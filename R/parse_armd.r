@@ -24,12 +24,13 @@ preview.armd = function(am=NULL, am.file=NULL,rmd.file=NULL,...) {
 #' @param am.has.sol shall the sample solution be stored in the .am file. Set this option to FALSE if you use problem sets in courses and don't want to assess students the sample solution easily
 #' @param use.memoise shall functions like read.csv be memoised? Data sets then only have to be loaded once. This can make problem sets run faster. Debugging may be more complicated, however.
 #' @export
-parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am.id= NULL, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", cache.dir = file.path(dir,"cache"), plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, ...) {
+parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am.id= NULL, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", cache.dir = file.path(dir,"cache"), plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, start.slide = NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, refreshable.content.ui = FALSE,...) {
   restore.point("parse.armd")
 
   am = new.env()
 
   am$version = 0.1
+  am$refreshable.content.ui = refreshable.content.ui
   am$figure.web.dir = figure.web.dir
   am$figure.sub.dir = figure.sub.dir
   if (!dir.exists(figure.dir))
@@ -180,6 +181,9 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
     bdf = shorten.bdf.index(bdf)
     lines = c(unlist(lapply(2:NROW(bdf), function(row) bdf$start[row]:bdf$end[row])))
     am$txt[-lines] = ""
+  } else if (!is.null(start.slide) & isTRUE(am$slides)) {
+    am$start.slide = start.slide
+
   } else if (!is.null(show.line) & isTRUE(am$slides)) {
     # set start slide to current source line
     bi = source.line.to.bi(line = show.line,source = 1,bdf=bdf,am=am,type = am$slide.type)

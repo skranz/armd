@@ -57,7 +57,7 @@ armd.block.html.head = function(am) {
   tagList(li)
 }
 
-armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) {
+armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE, refreshable.content.ui = isTRUE(am$refreshable.content.ui)) {
   restore.point("armd.slide.ui")
 
   am = fetch.am(am=am, am.file=am.file, rmd.file = rmd.file)
@@ -70,6 +70,7 @@ armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) 
 
   start.slide = first.non.null(am$start.slide,1)
   slide.ids = am$bdf$div.id[am$slide.bis]
+
   start.js = paste0('
     rtNumSlides = ', am$num.slides,';
     rtSlideIds = [', paste0('"',slide.ids,'"', collapse=","),'];
@@ -90,15 +91,21 @@ armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) 
     armd.block.html.head(am),
 
     #tags$style("table { max-width: 100%;}"),
-    div(id="maindiv",
-      content.ui
-    ),
-    tags$script(class="remove_offline_print",
+    if (refreshable.content.ui) {
+      uiOutput("maindiv",inline=FALSE, container=tags$div, content.ui)
+    } else {
+      div(id="maindiv",
+        content.ui
+      )
+    },
+    uiOutput("armdMsgUI"),
+    singleton(tags$script(class="remove_offline_print",
       src="armd/armd_slides.js"
-    ),
+    )),
+
     tags$script(
       class="remove_offline_print",
-      HTML(start.js)
+      if (!refreshable.content.ui) HTML(start.js)
     )
   )
   if (add.page) ui = bootstrapPage(ui)

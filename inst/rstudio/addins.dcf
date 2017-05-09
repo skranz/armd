@@ -1,3 +1,8 @@
+Name: armd: Autoupdate Preview
+Description: To be called in academic rmarkdown .Rmd file
+Binding: showArmdAutoupdateAddin
+Interactive: true
+
 Name: armd: Preview Part
 Description: To be called in academic rmarkdown .Rmd file
 Binding: showArmdPartAddin

@@ -1,6 +1,6 @@
 
 highlight.code.script = function() {
-  tags$script(class="remove_offline", "$('pre code.r').each(function(i, e) {hljs.highlightBlock(e)});")
+  tags$script(class="remove_offline", "$('pre code.r, pre code.language-r').each(function(i, e) {hljs.highlightBlock(e)});")
 }
 
 

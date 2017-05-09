@@ -3,12 +3,13 @@ var rtNumSlides = 3;
 var rtSlideIds = [];
 var prevSlideId = "";
 
-
-$(".rtNextBtn, #rtNextBtn").click(function(){
+$(document).on("click",".rtNextBtn, #rtNextBtn", function() {
+//$(".rtNextBtn, #rtNextBtn").click(function(){
   rtShowNext();
 });
 
-$(".rtPrevBtn, #rtPrevBtn").click(function(){
+$(document).on("click",".rtPrevBtn, #rtPrevBtn", function() {
+//$(".rtPrevBtn, #rtPrevBtn").click(function(){
   rtShowPrev();
 });
 
@@ -66,9 +67,10 @@ function rtAdaptSlideMargin(slideNum) {
 
 }
 
-function rtShowSlide(slideNum) {
+function rtShowSlide(slideNum, force) {
+  force = force || false;
 
-  if (slideNum == rtSlideNum) return;
+  if (slideNum == rtSlideNum && force==false) return;
   rtSlideNum = slideNum;
   var id = rtSlideIds[rtSlideNum-1];
 
@@ -80,11 +82,18 @@ function rtShowSlide(slideNum) {
   $("#"+id).css({"visibility": "visible"});
   // for shiny to render dynamic UI
   $("#"+id).trigger("shown");
-  if (prevSlideId !== "") {
+  if (prevSlideId !== "" && prevSlideId !==id) {
     $("#"+prevSlideId).css("display","none");
     $("#"+id).trigger("hidden");
   }
+
+  // try to send an shinyEvent
+  // in case the server is interested in the current slide
+  try { Shiny.onInputChange("armdShowSlide", {eventId: "armdShowSlide", id: "armdShowSlide", nonce: Math.random(),slideNum: slideNum, slideId: id}); } catch(e) {}
+
+
   prevSlideId = id;
+
 }
 
 function rtWasEventForDocument(e) {
