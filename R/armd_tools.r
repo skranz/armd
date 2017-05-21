@@ -268,7 +268,7 @@ copy.into.envir <- function (source = sys.frame(sys.parent(1)), dest = sys.frame
 }
 
 deparse1 = function(call, collapse="") {
-  paste0(deparse(call, width=500),collapse=collapse)
+  paste0(deparse(call, width.cutoff=500),collapse=collapse)
 }
 
 nlist = function (...)
@@ -383,7 +383,6 @@ get.txt.blocks = function(txt, start=NULL, end=NULL, start.with=NULL, end.with=N
     str = lapply(1:length(start.rows), function(i) txt[(start.rows[i]+inner):(end.rows[i]-inner)])
   }
   if (complements) {
-    n = length(start.rows)
     new.start.rows = c(1,end.rows+inner)
     end.rows = c(start.rows-inner, length(txt))
     start.rows = new.start.rows
@@ -504,7 +503,7 @@ my.help = function (topic, package = NULL, lib.loc = NULL, verbose = getOption("
 #   srd = structure(staticdocs:::set_classes(rd), class = cd("Rd_doc", "Rd"))
 #   html = to_html(srd)
   file = tempfile(pattern = "file", tmpdir = tempdir(), fileext = ".html")
-  html = tools::Rd2HTML(rd, out=file)
+  #html = tools::Rd2HTML(rd, out=file)
   #writeLines(html, file)
   browseURL(file)
 }
@@ -519,7 +518,7 @@ describe.data = function(dt) {
   li = lapply(dt,describe.var)
   li
   rbindlist(li)
-  stat = as.data.frame(do.call("rbind",li))
+  as.data.frame(do.call("rbind",li))
 }
 
 describe.var = function(...) {
@@ -566,7 +565,6 @@ describe.var.internal = function(v, name=NULL, funs = c("valid.obs","unique.obs"
 
 get.top.x.obs = function(v, top.x=5, digits=4) {
   restore.point("get.top.x.obs")
-  uv = unique(v)
 
   qu.df = data_frame(v=v)
   counts.df = summarise(group_by(qu.df,v), counts = n())

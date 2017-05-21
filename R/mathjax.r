@@ -33,3 +33,22 @@ with.mathjax = function (..., config=c("TeX-AMS_HTML", "TeX-AMS-MML_SVG")[2], ty
     )
 }
 
+mathjax.dollars.to.brackets = function(txt) {
+  restore.point("mathjax.dollars.to.brackets")
+  library(stringtools)
+  txt = merge.lines(txt)
+
+  # replace $$ by \[ and \]
+  pos = try(str.blocks.pos(txt,start = "$$", end="$$"),silent = TRUE)
+  if (!is(pos,"try-error")) {
+    txt = str.replace.at.pos(txt,cbind(pos$outer[,1],pos$outer[,1]+1),new = "\\[")
+    txt = str.replace.at.pos(txt,cbind(pos$outer[,2]-1,pos$outer[,2]),new = "\\]")
+  }
+
+  txt = sep.lines(txt)
+  txt = gsub('\\$(.+?)\\$','\\\\(\\1\\\\)',txt)
+  txt = merge.lines(txt)
+  #cat(txt)
+  txt
+}
+

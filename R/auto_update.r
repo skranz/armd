@@ -1,4 +1,4 @@
-refresherArmdApp = function(rmd.file,show.line=NULL, browser=rstudio::viewer) {
+refresherArmdApp = function(rmd.file,show.line=NULL, browser=rstudio::viewer, update.am.millis = 5000) {
   restore.point("refresherArmdApp")
 
   # TO DO: Deal with RTutorApps
@@ -8,7 +8,15 @@ refresherArmdApp = function(rmd.file,show.line=NULL, browser=rstudio::viewer) {
   try(shiny::addResourcePath("figure",paste0(dir,"/figure")), silent=TRUE)
 
   txt = readLines(rmd.file)
-  am = parse.armd(file = rmd.file, dir=dir, source.file = file, show.line=show.line, refreshable.content.ui=TRUE)
+  am = try(parse.armd(file = rmd.file, dir=dir, source.file = file, show.line=show.line, refreshable.content.ui=TRUE))
+
+  if (is(am, "try-error")) {
+    msg = paste0("\n",format(Sys.time),", compilation failed due to error:\n", as.character(am))
+    app = eventsApp()
+    app$ui = fluidPage(HTML(colored.html(msg, color="red")))
+    viewApp(app,launch.browser=TRUE)
+    quit()
+  }
 
   browser = TRUE
 
@@ -27,14 +35,18 @@ refresherArmdApp = function(rmd.file,show.line=NULL, browser=rstudio::viewer) {
   }
 
 
-  app$glob$old.am = am
+  app$glob$old.am = app$glob$new.am = am
   app$glob$start.slide = NULL
   app$glob$first.time = TRUE
   # will be called when app is refreshed
-  init.handler = function(...) {
+  init.handler = function(session,...) {
     restore.point("resfreshArmdAppInit")
+
+    app=getApp()
+    timedMessage("armdMsgUI",html= colored.html("Recompile..."), millis=Inf)
+
     txt = readLines(rmd.file)
-    if (!isTRUE(app$glob$first.time)) {
+    #if (!isTRUE(app$glob$first.time)) {
       am = try(parse.armd(txt=txt, dir=dir, source.file = file, show.line=show.line, start.slide = app$glob$start.slide))
       # could not compile without error
       if (is(am,"try-error")) {
@@ -43,10 +55,13 @@ refresherArmdApp = function(rmd.file,show.line=NULL, browser=rstudio::viewer) {
         cat(msg)
         return()
       }
+    app$glob$new.am = am
+    timedMessage("armdMsgUI",html= colored.html(""), millis=Inf)
 
+    if (!isTRUE(app$glob$first.time))
+      timedMessage("armdMsgUI",html= colored.html("New session started..."), millis=3000)
 
-      #app$was.changed = 100
-    }
+    am = app$glob$new.am
     app$glob$first.time = FALSE
     app$was.changed = first.non.null(app$was.changed, 0)
 
@@ -91,6 +106,7 @@ refresherArmdApp = function(rmd.file,show.line=NULL, browser=rstudio::viewer) {
   })
 
   runEventsApp(app, launch.browser=browser)
+  quit()
 }
 
 

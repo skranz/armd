@@ -1,3 +1,4 @@
+
 Name: armd: Autoupdate Preview
 Description: To be called in academic rmarkdown .Rmd file
 Binding: showArmdAutoupdateAddin
@@ -17,3 +18,9 @@ Name: armd: Compile Document
 Description: To be called in academic rmarkdown .Rmd file
 Binding: compileArmdDocument
 Interactive: true
+
+Name: Replace Mathjax Dollars (Clipboard)
+Description: Replace in the Clipboard Mathjax Expressions like $x$ with \(x\)
+Binding: replace.mathjax.dollars
+Interactive: false
+

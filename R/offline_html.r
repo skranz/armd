@@ -89,7 +89,7 @@ armd.offline.html = function(am, outfile=paste0(am$name,"_offline.html"),print.o
 }
 
 
-inline.external.html = function(html, h=NULL, inline.script=TRUE, inline.css=TRUE, del.files=NULL, ignore.files=NULL, del.path=NULL, just.delete=FALSE) {
+inline.external.html = function(html=NULL, h=NULL, inline.script=TRUE, inline.css=TRUE, del.files=NULL, ignore.files=NULL, del.path=NULL, just.delete=FALSE) {
   restore.point("inline.external.html")
 
   library(XML)

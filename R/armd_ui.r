@@ -19,7 +19,7 @@ examples.make.am.html = function() {
   file = tempfile(fileext = ".html")
   writeLines(html, file)
   rstudio::viewer(url=file)
-  browseURL()
+  browseURL(url=file)
 
   view.html(html=html)
 

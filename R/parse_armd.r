@@ -604,9 +604,10 @@ armd.parse.chunk = function(bi,am, opts=armd.opts()) {
     ui = knit.chunk(rmd,envir = am$pre.env,out.type="shiny", deps.action="attr")
 
     meta = attr(ui,"knit_meta")
-    deps = render.deps.as.singletons.tags(meta, inline.local.files = TRUE)
-    am$header.tags = c(am$header.tags, deps)
 
+    deps = render.deps.as.singletons.tags(meta, inline.local.files = TRUE)
+    is.head = unlist(lapply(meta, function(el) is(el,"shiny_head")))
+    am$header.tags = c(am$header.tags, deps,meta[is.head])
 
     ui = tagList(ui, highlight.code.script())
     set.bdf.ui(ui, bi,am)
@@ -670,6 +671,17 @@ armd.parse.gv = function(bi, am) {
   svg = gv.to.svg(gv=txt, to.clipboard = FALSE)
   ui = HTML(svg)
   set.bdf.ui(ui,bi,am)
+}
+
+# pure html block, not markdown
+armd.parse.html = armd.parse.tab = function(bi, am) {
+  restore.point("armd.parse.tab")
+
+  txt = get.bi.inner.txt(bi,am=am)
+  args = get.bi.args(bi=bi, am=am)
+  ui = HTML(txt)
+  set.bdf.ui(ui=ui, bi=bi,am=am)
+
 }
 
 armd.parse.tab = function(bi, am) {

@@ -20,7 +20,7 @@ armd.block.types.df = function(...) {
     "definition", "theorem","assumption","condition","fact","conjecture",
     "proposition","proof","lemma","define",
     "box",
-    "define"
+    "define","html"
   )
   parent.types = c("frame","row", "column","chunk","preknit","precompute","knit","compute","info","note", "section","subsection","exercise","required")
 

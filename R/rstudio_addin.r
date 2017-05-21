@@ -1,3 +1,9 @@
+replace.mathjax.dollars = function(...) {
+  txt = readClipboard()
+  txt = armd:::mathjax.dollars.to.brackets(txt)
+  txt = writeClipboard(txt)
+}
+
 guess.armd.file = function(txt = readLines(file)) {
   restore.point("guess.armd.file")
 

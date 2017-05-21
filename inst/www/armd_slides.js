@@ -146,11 +146,11 @@ $(document).on("click", function (e) {
 
   var pageX = e.pageX;
   var ww = $( window ).width();
-  if (pageX / ww <= 0.2) {
+  if (pageX / ww <= 0.05) {
     if (rtSlideNum > 1) {
       rtShowSlide(rtSlideNum-1);
     }
-  } else if (pageX / ww >= 0.2) {
+  } else if (pageX / ww >= 0.95) {
     if (rtSlideNum < rtNumSlides) {
       rtShowSlide(rtSlideNum+1);
     }
