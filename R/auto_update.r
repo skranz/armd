@@ -21,7 +21,7 @@ refresherArmdApp = function(rmd.file,show.line=NULL, browser=rstudio::viewer, up
   browser = TRUE
 
   if (isTRUE(am$rtutor)) {
-    library(RTutor3)
+    library(RTutor2)
     ps = armd.to.ps(am)
     if (isTRUE(am$opts$just.rmd)) {
       cat("\nRTutor rmd files have been created.")
@@ -132,7 +132,7 @@ recompile.autoupdate.am = function(rmd.file, start.slide=1, old.am=get.am(), app
   app$am = am
   # auto update for RTutor not yet implemented
   if (isTRUE(am$rtutor)) {
-    library(RTutor3)
+    library(RTutor2)
     ps = armd.to.ps(am)
     app$ps = ps
     #RTutor3::get.ps

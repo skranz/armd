@@ -110,7 +110,7 @@ preview.armd.part.addin = function(single.part=TRUE,...,am=NULL) {
   }
 
   if (isTRUE(am$rtutor)) {
-    library(RTutor3)
+    library(RTutor2)
     ps = armd.to.ps(am)
     if (isTRUE(am$opts$just.rmd)) {
       cat("\nRTutor rmd files have been created.")
@@ -200,7 +200,7 @@ commandline.preview.armd = function(path, line, single.part=FALSE, auto.updates=
   browser = TRUE
 
   if (isTRUE(am$rtutor)) {
-    library(RTutor3)
+    library(RTutor2)
     ps = armd.to.ps(am)
     if (isTRUE(am$opts$just.rmd)) {
       cat("\nRTutor rmd files have been created.")

@@ -105,8 +105,8 @@ add.cols.if.missing = function(df, ...) {
 # Can be used to automatically load packages
 armd.block.type.default.packages = function() {
   c(pane="EconCurves",plotpane="EconCurves",panequiz="EconCurves",
-    preknit="RTutor3",precompute="RTutor3",award="RTutor3",
-    quiz="RTutor3")
+    preknit="RTutor2",precompute="RTutor2",award="RTutor2",
+    quiz="RTutor2")
 
 }
 

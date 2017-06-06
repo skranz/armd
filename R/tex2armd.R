@@ -8,10 +8,11 @@ example = function() {
     "\\newpage","\n#. frame\n",
     "\\lyxframe{","\\subsubsection{",
     "\\lyxframeend{}","",
-    "\\tbf{","\\textbf{"
+    "\\tbf{","\\textbf{",
+    "{\\Lsf", ""
   )
   post.fixed = c("\\#.","#.")
-  convert.tex.to.armd("Kap2.tex", pre.fixed=pre.fixed, post.fixed=post.fixed)
+  convert.tex.to.armd("Kap4.tex", pre.fixed=pre.fixed, post.fixed=post.fixed)
 
 
 
@@ -39,9 +40,37 @@ convert.tex.to.armd = function(input.file, pre.fixed=NULL, post.fixed=NULL) {
   txt = readLines(input, warn=FALSE)
   #txt = preconvert.tex.to.armd(txt)
   txt = replace.by.rules(txt, pre.fixed)
+  txt = sep.lines(txt)
   writeLines(txt,temp.input)
 
-  run.pandoc(temp.input, temp.output)
+  res = run.pandoc(temp.input, temp.output)
+
+  txt = readLines(temp.input)
+  # not created without error
+  if (res != 0) {
+    lines = c(which(has.substr(txt,"#. frame"))[-1]-1, length(txt))
+
+    run.fun = function(txt, line,...) {
+      cat("\ntest line", line, "...")
+      txt = txt[1:line]
+      writeLines(txt,temp.input)
+      res = suppressWarnings(run.pandoc(temp.input, temp.output))
+      if (res == 0) {
+        cat("ok!")
+      }
+      res == 0
+    }
+    line = systematic.txt.test(txt, lines, run.fun)
+    writeLines(txt,temp.input)
+    if (is.na(line)) {
+      stop("Could not perform a successful pandoc conversion for any frame!")
+    } else {
+      cat("\nPandoc conversion succesful only until line ", line,". Check for error in lines ", line+1, " to ", min(lines[lines>line]), " of file ", temp.input)
+    }
+
+    txt = txt[1:line]
+  }
+
 
   txt = readLines(temp.output, warn=FALSE)
   txt = md2armd(txt)
@@ -145,4 +174,26 @@ pdf2svg = function(file, inkscape.bin) {
   svg.file = paste0(tools::file_path_sans_ext(file),".svg")
   com = paste0(inkscape.bin," ",file," --export-plain-svg=",svg.file)
   system(com)
+}
+
+systematic.txt.test = function(txt, lines, run.fun,...) {
+  if (length(lines)==0) return(NA)
+  restore.point("systematic.txt.test")
+
+  print(lines)
+  row = sample.int(length(lines),1)
+  line = lines[row]
+  res = run.fun(txt,line=line,...)
+  if (!res) {
+    lines = lines[lines < line]
+    res.line = systematic.txt.test(txt, lines, run.fun,...)
+  } else {
+    lines = lines[lines > line]
+    res.line = systematic.txt.test(txt, lines, run.fun,...)
+    if (is.na(res.line)) res.line = line
+  }
+  restore.point("systematic.txt.test.end")
+
+  return(res.line)
+
 }

@@ -91,9 +91,9 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
 
   # special treatment for rtutor
   if (isTRUE(opts$rtutor)) {
-    library(RTutor3)
+    library(RTutor2)
     opts = do.call(default.ps.opts, opts)
-    am$css = paste0(readLines(system.file("defaults/default.css",package="RTutor3"),warn = FALSE), collapse="\n")
+    am$css = paste0(readLines(system.file("defaults/default.css",package="RTutor2"),warn = FALSE), collapse="\n")
 
   } else {
     am$css = paste0(readLines(system.file("defaults/default.css",package="armd"), warn=FALSE), collapse="\n")
@@ -209,8 +209,8 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
   am$opts$has.widgets = am$has.widgets = any(bdf$is.widget)
   am$rtutor = am$opts$rtutor
   if (am$opts$has.widgets | am$opts$rtutor) {
-    library(RTutor3)
-    RTutor3::rtutor.init.widgets(am)
+    library(RTutor2)
+    RTutor2::rtutor.init.widgets(am)
   }
 
   # set knitr output for data frames
@@ -661,6 +661,8 @@ armd.parse.define = function(bi,am) {
   armd.parse.as.container(bi,am,is.hidden = TRUE)
 }
 
+
+
 armd.parse.gv = function(bi, am) {
   restore.point("armd.parse.gv")
   arg.str= am$bdf$arg.str[[bi]]
@@ -674,7 +676,7 @@ armd.parse.gv = function(bi, am) {
 }
 
 # pure html block, not markdown
-armd.parse.html = armd.parse.tab = function(bi, am) {
+armd.parse.html = function(bi, am) {
   restore.point("armd.parse.tab")
 
   txt = get.bi.inner.txt(bi,am=am)
