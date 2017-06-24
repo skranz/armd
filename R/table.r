@@ -62,7 +62,7 @@ html.table = function(df, sel.row=NULL, col.names=TRUE, row.names=FALSE, border=
   }
 
   tab = paste0("<style>",
-    " table.data-frame-table {	border-collapse: collapse;  display: block; overflow-x: auto;}\n",
+    " table.data-frame-table {	border-collapse: collapse;  display: block; overflow-x: auto; margin-left: auto; margin-right: auto;}\n",
     " td.data-frame-td {", td.style,"}\n",
     " td.data-frame-td-bottom {", td.style," border-bottom: solid 1px black;}\n",
     " th.data-frame-th {", th.style,"}\n",

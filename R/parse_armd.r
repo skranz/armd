@@ -695,6 +695,8 @@ armd.parse.tab = function(bi, am) {
   sep = first.non.null(args[["sep"]],am$opts[["tab.sep"]],",")
   bg = first.non.null(args[["bg"]],am$opts[["tab.bg"]],"#fff")
   line.end = first.non.null(args[["\\"]],am$opts[["tab.line.end"]],"\\")
+  class = first.non.null(args[["class"]],"")
+
 
   if (nchar(line.end)>0) {
     rows = str.ends.with(txt, line.end)
@@ -703,7 +705,7 @@ armd.parse.tab = function(bi, am) {
 
   df = read.csv(textConnection(txt),check.names=FALSE,sep=sep)
 
-  ui = div(style="margin: auto",HTML(html.table(df,bg.color = bg, table.style="margin: auto;", table.class="")))
+  ui = div(style="margin: auto",HTML(html.table(df,bg.color = bg, table.style="margin: auto;", table.class=class)))
   set.bdf.ui(ui=ui, bi=bi,am=am)
 }
 

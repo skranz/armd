@@ -135,7 +135,7 @@ recompile.autoupdate.am = function(rmd.file, start.slide=1, old.am=get.am(), app
     library(RTutor2)
     ps = armd.to.ps(am)
     app$ps = ps
-    #RTutor3::get.ps
+    #RTutor2::get.ps
   }
   content.ui = am$bdf$ui[[1]]
 

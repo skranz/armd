@@ -1,5 +1,6 @@
 with.mathjax = function (..., config=c("TeX-AMS_HTML", "TeX-AMS-MML_SVG")[2], typeset.mathjax = !TRUE)
 {
+  return(shiny::withMathJax(...))
   # new version with indiviudal config
 
   config.js = '

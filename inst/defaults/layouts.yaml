@@ -9,19 +9,21 @@ figure.2col:
   whiskers:
     default:
       leftcol.width: 50%
+      leftcol.align = "left"
+      rightcol.align = "right"
   default: |
     <div width="100%">
     <table><tr>
     <table>
-    <tr><td class="leftcol" style="width: {{leftcol.width}}">
+    <tr><td class="leftcol" align={{leftcol.align}} style="width: {{leftcol.width}}">
     {{leftcol}}
-    </td><td class="rightcol">
+    </td><td class="rightcol" align={{leftcol.align}}>
     {{rightcol}}
     </td></tr></table>
     </tr><tr>
     {{caption}}
     </tr></table>
-    
+
 figure:
   whiskers:
   default: |

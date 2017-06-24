@@ -82,9 +82,22 @@ function rtShowSlide(slideNum, force) {
   $("#"+id).css({"visibility": "visible"});
   // for shiny to render dynamic UI
   $("#"+id).trigger("shown");
+
+
+  // hide previous slide
   if (prevSlideId !== "" && prevSlideId !==id) {
     $("#"+prevSlideId).css("display","none");
-    $("#"+id).trigger("hidden");
+    $("#"+prevSlideId).trigger("hidden");
+  }
+  // hide all other slides (sometimes there is a bug)
+  // and hiding previous slide is not enough
+  for (var i = 0; i < rtSlideIds.length; i++) {
+    var oid = rtSlideIds[i];
+    var oo = $("#"+oid);
+    if (oid !== id && oo.css("display") !== "none") {
+      oo.css("display","none");
+      oo.trigger("hidden");
+    }
   }
 
   // try to send an shinyEvent

@@ -1,3 +1,17 @@
+writeClipboardAsCSV = function(df, round.digits=NULL, signif.digits = NULL) {
+  li = lapply(df, function(vals) {
+    if (is.numeric(vals)) {
+      if (!is.null(round.digits)) vals = round(vals, round.digits)
+      if (!is.null(signif.digits)) vals = round(vals, signif.digits)
+    }
+    vals
+  })
+  txt = do.call(paste0, c(li, list(sep=", ")))
+  txt = c(paste0(names(li), collapse=", "),txt)
+  writeClipboard(txt)
+}
+
+
 has.col = function(x,col) {
   col %in% names(x)
 }
