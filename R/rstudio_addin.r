@@ -19,8 +19,8 @@ showArmdPartAddin = function(...) {
   preview.armd.part.addin(single.part=TRUE)
 }
 
-showArmdAutoupdateAddin = function(...) {
-  external.preview.armd.part.addin(single.part=FALSE, ...)
+showArmdOfflineSlides = function(...) {
+  compileArmdDocument(..., always.offline.slides=TRUE)
 }
 
 
@@ -28,7 +28,7 @@ showArmdAddin = function(...) {
   preview.armd.part.addin(single.part=FALSE)
 }
 
-compileArmdDocument = function(...) {
+compileArmdDocument = function(..., always.offline.slides=FALSE) {
   library(armd)
   restore.point("compileArmdDocument")
 
@@ -44,7 +44,8 @@ compileArmdDocument = function(...) {
   setwd(dir)
   am = parse.armd(file=file, dir=dir, source.file = file)
 
-  if (isTRUE(am$rtutor)) {
+
+  if (isTRUE(am$rtutor) & !always.offline.slides) {
     preview.armd.part.addin(am=am,...)
   } else {
     createArmdOfflineSlides(am, doc)

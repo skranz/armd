@@ -1,7 +1,7 @@
 
-Name: armd: Autoupdate Preview
+Name: armd: Offline Slides
 Description: To be called in academic rmarkdown .Rmd file
-Binding: showArmdAutoupdateAddin
+Binding: showArmdOfflineSlides
 Interactive: true
 
 Name: armd: Preview Part
