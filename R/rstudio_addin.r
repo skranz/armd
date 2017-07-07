@@ -57,7 +57,7 @@ createArmdOfflineSlides = function(am,doc) {
   armd.offline.html(am)
 }
 
-preview.armd.part.addin = function(single.part=TRUE,...,am=NULL) {
+preview.armd.part.addin = function(single.part=TRUE,...,am=NULL, greyout=FALSE) {
 
   library(rstudioapi)
   library(armd)
@@ -102,11 +102,11 @@ preview.armd.part.addin = function(single.part=TRUE,...,am=NULL) {
 
   preview = am$opts$preview
   if (identical(preview,"rstudio")) {
-    browser = rstudio::viewer
+    browser = rstudioapi::viewer
   } else if (identical(preview,"browser")) {
     browser = TRUE
   } else {
-    browser = rstudio::viewer
+    browser = rstudioapi::viewer
   }
 
   if (isTRUE(am$rtutor)) {
@@ -122,7 +122,21 @@ preview.armd.part.addin = function(single.part=TRUE,...,am=NULL) {
     return()
   }
 
+
   ui = armd.ui(am = am)
+
+  # if (!greyout) {
+  #   ui = tagList(
+  #     tags$head(tags$style(type="text/css",
+  #       "body.disconnected {
+  #         background-color: inherit;
+  #         opacity: 1;
+  #       }"
+  #     )),
+  #     ui
+  #   )
+  # }
+
   view.html(ui=ui, browser=browser)
 }
 

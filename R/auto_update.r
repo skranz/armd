@@ -1,4 +1,4 @@
-refresherArmdApp = function(rmd.file,show.line=NULL, browser=rstudio::viewer, update.am.millis = 5000) {
+refresherArmdApp = function(rmd.file,show.line=NULL, browser=rstudioapi::viewer, update.am.millis = 5000) {
   restore.point("refresherArmdApp")
 
   # TO DO: Deal with RTutorApps
