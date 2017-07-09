@@ -25,6 +25,7 @@ xml2html(x)
 }
 
 replace.script.node = function(node, value="", attr=NULL) {
+  restore.point("replace.script.node")
   nn = xmlNode(name="script",xmlCDataNode(value), attrs=attr)
   invisible(replaceNodes(node,nn))
 }

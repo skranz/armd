@@ -20,7 +20,24 @@ showArmdPartAddin = function(...) {
 }
 
 showArmdOfflineSlides = function(...) {
-  compileArmdDocument(..., always.offline.slides=TRUE)
+  compileArmdDocument(..., offline=TRUE)
+}
+
+
+showArmdPrint = function(...) {
+  library(armd)
+  doc = rstudioapi::getActiveDocumentContext()
+  file = basename(doc$path)
+  if (nchar(file)==0) {
+    cat("\nRStudio has not detected your .rmd tab. Please try again!")
+    return()
+  }
+  dir = dirname(doc$path)
+  setwd(dir)
+
+  app = armdPrintApp(rmd.file = file)
+  viewApp(app, launch.browser = TRUE)
+
 }
 
 
@@ -28,7 +45,7 @@ showArmdAddin = function(...) {
   preview.armd.part.addin(single.part=FALSE)
 }
 
-compileArmdDocument = function(..., always.offline.slides=FALSE) {
+compileArmdDocument = function(..., offline=FALSE) {
   library(armd)
   restore.point("compileArmdDocument")
 
@@ -42,10 +59,11 @@ compileArmdDocument = function(..., always.offline.slides=FALSE) {
   }
   dir = dirname(doc$path)
   setwd(dir)
-  am = parse.armd(file=file, dir=dir, source.file = file)
+
+  am = parse.armd(file=file, dir=dir, source.file = file, offline=offline)
 
 
-  if (isTRUE(am$rtutor) & !always.offline.slides) {
+  if (!offline) {
     preview.armd.part.addin(am=am,...)
   } else {
     createArmdOfflineSlides(am, doc)

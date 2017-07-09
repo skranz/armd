@@ -2,15 +2,16 @@ examples.offline.html = function() {
   setwd("D:/libraries/armd/examples")
   outdir = paste0(getwd(),"/figures")
 
-  name = "test"
-
+  name = "offline_test"
   rmd.file = paste0(name,".rmd")
-  am.file = paste0(name,".am")
-  html.file = paste0(name,".html")
+  #am.file = paste0(name,".am")
+  #html.file = paste0(name,".html")
 
 
-  am = fetch.am(rmd.file = rmd.file)
+  #am = fetch.am(rmd.file = rmd.file)
+  am= parse.armd(file=rmd.file)
 
+  #str(am$header.tags[[1]])
   html = armd.offline.html(am=am)
 
   ui = armd.slide.ui(am = am)
@@ -26,8 +27,22 @@ examples.offline.html = function() {
   cat(body)
 }
 
+armd.offline.test = function() {
+  restore.point("create.offline.am")
+  app = eventsApp()
+  ui = armd.ui(am,add.page = TRUE)
+
+  #ui = bootstrapPage(
+  #  am$header.tags,
+  #  ui
+  #)
+  app$ui = ui
+  viewApp(app, launch.browser = TRUE)
+}
+
 armd.offline.html = function(am, outfile=paste0(am$name,"_offline.html"),print.outfile=paste0(am$name,"_offline_print.html"), browse=TRUE) {
   restore.point("create.offline.am")
+
 
   ui = armd.ui(am,add.page = FALSE)
   ui = tagList(
@@ -35,6 +50,8 @@ armd.offline.html = function(am, outfile=paste0(am$name,"_offline.html"),print.o
     ui
   )
   html = as.inlined.mathjax.html(ui,use.button = FALSE)
+
+
   restore.point("create.offline.am.inner")
 
   org.html = html
@@ -42,10 +59,13 @@ armd.offline.html = function(am, outfile=paste0(am$name,"_offline.html"),print.o
   library(selectr)
   h = htmlParse(html)
 
-  nodes = querySelectorAll(h,".remove_offline, #MathJax_Message")
+  nodes = querySelectorAll(h,".remove_offline, #MathJax_Message, .modebar modebar--hover")
   for(node in nodes) XML::removeNodes(node)
 
-  del.files=c("MathJax.js","highlight.min.js","r.min.js","json2-min.js","shiny.css","shiny.min.js","shinyBS.css","shinyBS.js","babel-polyfill.min.js","font-awesome.min.css")
+  del.files=c("MathJax.js","highlight.min.js","r.min.js","json2-min.js","shiny.css","shiny.min.js","shinyBS.css","shinyBS.js","babel-polyfill.min.js","font-awesome.min.css","plotly-latest.min.js",
+#    "plotly.js","plotly-htmlwidgets.css",
+    "crosstalk.min.js","crosstalk.css"
+  )
   del.path = NULL
   html = inline.external.html(h=h,del.path=del.path,del.files=del.files)
 
@@ -61,6 +81,10 @@ armd.offline.html = function(am, outfile=paste0(am$name,"_offline.html"),print.o
     if (browse)
       browseURL(outfile)
   }
+
+  # don't make offline print anymore
+  return(invisible(html))
+
 
   # make offline print html
   h = htmlParse(work.html)
@@ -123,6 +147,7 @@ inline.external.html = function(html=NULL, h=NULL, inline.script=TRUE, inline.cs
 
 
   for (i in seq_along(nodes)) {
+    #restore.point("hskjfhuidffhu")
     node = nodes[[i]]
     dir  = dirs[[i]]
     path = paths[[i]]
@@ -157,13 +182,15 @@ inline.external.html = function(html=NULL, h=NULL, inline.script=TRUE, inline.cs
     if (is.null(res)) return(NA)
     res
   }))
+
   rows = !is.na(src)
   nodes = nodes[rows]
   src = src[rows]
 
   res = findShinyRessourceDir(src)
 
-  rows = !(res$path %in% del.path)
+  rows = !((res$path %in% del.path) | has.substr(src,"mathjax") | has.substr(src,"plotly-latest.min.js"))
+
   # remove external scripts
   for (node in nodes[!rows]) removeNodes(node)
 
@@ -196,7 +223,7 @@ inline.external.html = function(html=NULL, h=NULL, inline.script=TRUE, inline.cs
     cat("\ninline script ", file)
     file_class = gsub(".","_",file,fixed=TRUE)
 
-    replace.script.node(node,code, attr=c(class=paste0("inlined_script inlined_script_", file_class)))
+    try(replace.script.node(node,code, attr=c(class=paste0("inlined_script inlined_script_", file_class))))
   }
 
   xml2html(h)
@@ -322,6 +349,7 @@ $("#saveOfflineBtn").click(function(e) {
   } else {
     js = paste0(js,'
 MathJax.Hub.Queue(function () {
+  //alert("remove_mathjax_and_save");
   remove_mathjax_and_save();
 
 });'
@@ -335,6 +363,19 @@ MathJax.Hub.Queue(function () {
       tags$script(js)
     )
 
+  )
+
+}
+
+armd.offline.funs = function(...) {
+  list(
+    ## plotly functions
+    ggplotly = function(x,...) {
+      x
+    },
+    config = function(x,...) {
+      x
+    }
   )
 
 }

@@ -1,9 +1,3 @@
-
-Name: armd: Offline Slides
-Description: To be called in academic rmarkdown .Rmd file
-Binding: showArmdOfflineSlides
-Interactive: true
-
 Name: armd: Preview Part
 Description: To be called in academic rmarkdown .Rmd file
 Binding: showArmdPartAddin
@@ -19,8 +13,17 @@ Description: To be called in academic rmarkdown .Rmd file
 Binding: compileArmdDocument
 Interactive: true
 
+Name: armd: Offline Slides
+Description: To be called in academic rmarkdown .Rmd file
+Binding: showArmdOfflineSlides
+Interactive: true
+
+Name: armd: Print Preview
+Description: To be called in academic rmarkdown .Rmd file
+Binding: showArmdPrint
+Interactive: true
+
 Name: Replace Mathjax Dollars (Clipboard)
 Description: Replace in the Clipboard Mathjax Expressions like $x$ with \(x\)
 Binding: replace.mathjax.dollars
 Interactive: false
-

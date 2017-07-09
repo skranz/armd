@@ -46,6 +46,7 @@ default.armd.opts = function(
   # Turn off graphics when checking chunk
   use.null.device = TRUE,
   verbose = FALSE,
+  verbose.compile = TRUE,
 
   #chunk.out.args = default.chunk.out.args(),
   knit.print.params = default.knit.print.params(),
@@ -56,6 +57,8 @@ default.armd.opts = function(
   id = "armd",
   hide_title = if (slides) c("section","subsection") else NULL,
   block.libs = NULL,
+  offline = FALSE,
+  inline.images = offline,
   ...
 ) {
   args = c(as.list(environment()),list(...))

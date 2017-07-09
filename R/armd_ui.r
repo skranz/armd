@@ -85,6 +85,7 @@ armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE, 
     singleton(tags$head(tags$script(src = 'highlightjs/highlight.min.js',class="remove_offline", type = 'text/javascript'))),
     singleton(tags$head(tags$script(src = 'highlightjs/languages/r.min.js', class="remove_offline",type = 'text/javascript'))),
     head,
+    am$dependencies,
     am$header.tags,
     css,
     mcss,
@@ -108,7 +109,7 @@ armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE, 
       if (!refreshable.content.ui) HTML(start.js)
     )
   )
-  if (add.page) ui = bootstrapPage(ui)
+  if (add.page) ui = bootstrapPage(ui,title = am$opts[["title"]])
   with.mathjax(ui)
 }
 
@@ -126,6 +127,7 @@ armd.page.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) {
     singleton(tags$head(tags$script(src = 'highlightjs/highlight.min.js',class="remove_offline", type = 'text/javascript'))),
     singleton(tags$head(tags$script(src = 'highlightjs/languages/r.min.js',class="remove_offline",type = 'text/javascript'))),
     head,
+    am$dependencies,
     am$header.tags,
     css,
     mcss,
@@ -134,7 +136,7 @@ armd.page.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) {
       content.ui
     )
   )
-  if (add.page) ui = bootstrapPage(ui)
+  if (add.page) ui = bootstrapPage(ui,title = am$opts[["title"]])
   with.mathjax(ui)
 }
 

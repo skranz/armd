@@ -24,11 +24,12 @@ preview.armd = function(am=NULL, am.file=NULL,rmd.file=NULL,...) {
 #' @param am.has.sol shall the sample solution be stored in the .am file. Set this option to FALSE if you use problem sets in courses and don't want to assess students the sample solution easily
 #' @param use.memoise shall functions like read.csv be memoised? Data sets then only have to be loaded once. This can make problem sets run faster. Debugging may be more complicated, however.
 #' @export
-parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am.id= NULL, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", cache.dir = file.path(dir,"cache"), plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, start.slide = NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, refreshable.content.ui = FALSE,...) {
+parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am.id= NULL, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", cache.dir = file.path(dir,"cache"), plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, start.slide = NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, refreshable.content.ui = FALSE, offline=FALSE,...) {
   restore.point("parse.armd")
 
   am = new.env()
 
+  am$offline = offline
   am$version = 0.1
   am$refreshable.content.ui = refreshable.content.ui
   am$figure.web.dir = figure.web.dir
@@ -45,7 +46,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
   am$plugins = plugins
   am$css = am$head = NULL
 
-  am$header.tags = list()
+  am$header.tags = am$dependencies = list()
 
   if (length(txt)==1)
     txt = sep.lines(txt)
@@ -72,7 +73,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
   # first load settings in opts
   # settings in rmd file overwrite opts
   bis = which(df$type == "settings")
-  opts = list()
+  opts = list(offline = am$offline)
   if (!is.na(use.memoise)) opts$use.memoise = use.memoise
   for (bi in bis) {
     yaml = paste0(txt[(df$start[bi]+1):(df$end[bi]-1)], collapse="\n")
@@ -88,6 +89,8 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
   }
   if (!is.null(am.id)) opts$id = am.id
   if (is.null(opts[["id"]])) opts$id = opts$name
+
+  opts$title = first.non.null(opts$title, opts$name)
 
   # special treatment for rtutor
   if (isTRUE(opts$rtutor)) {
@@ -197,6 +200,13 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
   load.packages(am$opts$libs)
 
   am$init.env = new.env(parent=parent.env(globalenv()))
+
+  # overwrite some R functions in offline mode
+  # currently we overwrite ggplotly and config
+  if (am$offline) {
+    copy.into.env(dest=am$init.env, source = armd.offline.funs(am))
+  }
+
   am$pre.env = new.env(parent=am$init.env)
 
   if (isTRUE(am$opts$use.memoise)) {
@@ -601,13 +611,10 @@ armd.parse.chunk = function(bi,am, opts=armd.opts()) {
   } else {
     # knitted chunk
     rmd = code.to.rmd.chunk(code,args=args)
-    ui = knit.chunk(rmd,envir = am$pre.env,out.type="shiny", deps.action="attr")
+    ui = knit.chunk(rmd,envir = am$pre.env,out.type="shiny", deps.action="attr", use.commonmark = TRUE)
 
     meta = attr(ui,"knit_meta")
-
-    deps = render.deps.as.singletons.tags(meta, inline.local.files = TRUE)
-    is.head = unlist(lapply(meta, function(el) is(el,"shiny_head")))
-    am$header.tags = c(am$header.tags, deps,meta[is.head])
+    armd.add.meta(am=am, meta=meta)
 
     ui = tagList(ui, highlight.code.script())
     set.bdf.ui(ui, bi,am)
@@ -812,30 +819,41 @@ armd.parse.exercise = function(bi,am) {
 
 armd.parse.section = function(bi,am) {
   restore.point("armd.parse.section")
-  armd.parse.as.section(bi,am,type="section", rmd.prefix="## Section")
+
+  armd.parse.as.section(bi,am,type="section", rmd.prefix="## Section", title.fun=h2, title.display = "block")
 }
 
 armd.parse.subsection = function(bi,am) {
   restore.point("armd.parse.subsection")
-  armd.parse.as.section(bi,am,type="subsection", rmd.prefix="### Subsection")
+  armd.parse.as.section(bi,am,type="subsection", rmd.prefix="### Subsection",title.fun=h3, title.display = "block")
 }
 
 
 armd.parse.subsubsection = function(bi,am) {
   restore.point("armd.parse.subsection")
-  armd.parse.as.section(bi,am,type="subsubsection", rmd.prefix="####  Subsubsection")
+  armd.parse.as.section(bi,am,type="subsubsection", rmd.prefix="####  Subsubsection",title.fun=h4, title.display = "inline")
+
 }
 
 armd.parse.frame = function(bi,am) {
   restore.point("armd.parse.frame")
-  armd.parse.as.section(bi,am,type="frame", rmd.prefix="### Frame")
+
+  armd.parse.as.section(bi,am,type="frame", rmd.prefix="### Frame",title.fun=h4, title.display = "block")
 }
 
-armd.parse.as.section = function(bi, am, type="section", rmd.prefix="# Section") {
+armd.parse.as.section = function(bi, am, type="section", rmd.prefix="# Section", title.fun=h4, title.display="inline") {
   restore.point("armd.parse.as.section")
   bdf = am$bdf; br = bdf[bi,];
   arg.str= am$bdf$arg.str[[bi]]
   args = parse.block.args(arg.str =arg.str, allow.unquoted.title = TRUE)
+
+  title = first.non.null(args$title, args$name)
+  if (isTRUE(am$opts$verbose.compile)) {
+    num = sum(am$bdf$type[1:bi] == type)
+    cat(paste0("\nparse ",type, " ", num,": ",title))
+  }
+
+
   # extract layout in [ ]
   if (str.starts.with(arg.str,"[")) {
     args$layout.name = str.between(args$name,"[","]")
@@ -848,11 +866,10 @@ armd.parse.as.section = function(bi, am, type="section", rmd.prefix="# Section")
     }
     args$name = str.trim(str.right.of(args$name,']'))
   }
-  title = first.non.null(args$title, args$name)
   type = am$bdf$stype[[bi]]
-  if (isTRUE(type %in% am$opts$hide_title)) title = NULL
+  #if (isTRUE(type %in% am$opts$hide_title)) title = NULL
 
-  armd.parse.as.container(bi,am,args = args, rmd.prefix=paste0(rmd.prefix," ",title,"\n"), title = title, anchor=paste0("part",bi))
+  armd.parse.as.container(bi,am,args = args, rmd.prefix=paste0(rmd.prefix," ",title,"\n"), title = title, anchor=paste0("part",bi), type=type, title.fun=title.fun, title.display=title.display)
   if (is.null(args$title.offset)) args$title.offset=0
   button.label = str.left.of(args$name," --")
   am$bdf$obj[[bi]] = list(title = args$name,button.label = button.label, args=args)
@@ -860,7 +877,7 @@ armd.parse.as.section = function(bi, am, type="section", rmd.prefix="# Section")
 }
 
 
-armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd=NULL, highlight.code = is.widget, is.widget=get.bt(am$bdf$type[[bi]],am)$is.widget, rmd.head=NULL, rmd.prefix="", rmd.postfix="", ui.fun=NULL, title = am$bdf$obj[[bi]]$title, is.hidden = am$bdf$type[[bi]] %in% am$hidden.container.types, extra.class = "", only.children.ui = FALSE, anchor=NULL) {
+armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd=NULL, highlight.code = is.widget, is.widget=get.bt(type,am)$is.widget, rmd.head=NULL, rmd.prefix="", rmd.postfix="", ui.fun=NULL, title = am$bdf$obj[[bi]]$title, is.hidden = am$bdf$type[[bi]] %in% am$hidden.container.types, extra.class = "", only.children.ui = FALSE, anchor=NULL, type=am$bdf$type[[bi]], title.fun=h4, title.display="block", title.hide=isTRUE(type %in% am$opts$hide_title)) {
   restore.point("armd.parse.as.container")
   bdf = am$bdf; br = bdf[bi,];
   if (is.null(inner.ui) | is.null(rmd)) {
@@ -882,9 +899,6 @@ armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd=NULL, 
     )
   }
 
-
-  type = am$bdf$type[[bi]]
-
   header = NULL
   # Add slide header
   if (am$slides & identical(am$slide.type,type)) {
@@ -894,7 +908,7 @@ armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd=NULL, 
   # Add title as header
   } else {
     if (!is.null(title))
-      header = container.title.html(title = title, anchor=anchor)
+      header = container.title.html(title = title, anchor=anchor, type=type, title.fun=title.fun, display=title.display, hide=title.hide)
   }
   if (!is.null(header)) {
     inner.ui = list(header, inner.ui)
@@ -929,12 +943,19 @@ armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd=NULL, 
   am$bdf$is.container[[bi]] = TRUE
 }
 
-container.title.html = function(title,type=NULL, am=NULL, class=NULL, anchor=NULL) {
+container.title.html = function(title,type=NULL, am=NULL, class=paste0("container-title ",type,"-title", " container-",display,"-title"), anchor=NULL, title.fun=h4, hide = isTRUE(type %in% am$opts$hide_title), display="inline") {
   if (is.null(title)) return(NULL)
-  res = h4(class=class, title)
+  if (title=="") return(NULL)
+  res = title.fun(title)
   if (!is.null(anchor)) {
     res = a(name=anchor, class="title-anchor", res)
   }
+  if (hide) {
+    style = "display: none"
+  } else {
+    style = paste0("display: ", display)
+  }
+  res = span(class=class, style=style, res)
   res
 }
 

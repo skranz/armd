@@ -78,7 +78,7 @@ function rtShowSlide(slideNum, force) {
 
   $("#"+id).css({"display": "block", "visibility": "hidden"});
   //rtAdaptSlideMargin(rtSlideNum);
-  $("#"+id).css({"padding-left": "12%", "padding-right": "12%"});
+  //$("#"+id).css({"padding-left": "12%", "padding-right": "12%"});
   $("#"+id).css({"visibility": "visible"});
   // for shiny to render dynamic UI
   $("#"+id).trigger("shown");
