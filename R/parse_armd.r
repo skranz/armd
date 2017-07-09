@@ -503,27 +503,6 @@ shorten.bdf.index = function(bdf, new = 1:NROW(bdf), old = bdf$index) {
   bdf
 }
 
-armd.dot.levels = function(am) {
-  dot.levels = c(
-    armd = -1000,
-    section = -3,
-    subsection = -2,
-    subsubsection = -1,
-    frame = 1,
-    row = 2,
-    references = 2,
-    column = 3,
-    success = 3,
-    when = 3
-  )
-  backto = dot.levels+1
-  names(backto) = paste0("back_to_",names(dot.levels))
-  lev = c(dot.levels, backto)
-  lev = rank(lev,ties.method = "min")
-  lev
-}
-
-
 armd.preparse.block = function(bi,am, opts = am$opts) {
   restore.point("armd.preparse.block")
   type = am$bdf$type[[bi]]
@@ -822,6 +801,13 @@ armd.parse.exercise = function(bi,am) {
   restore.point("armd.parse.exercise")
   armd.parse.as.section(bi,am,type="exercise", rmd.prefix="## Exercise")
 }
+
+armd.parse.chapter = function(bi,am) {
+  restore.point("armd.parse.chapter")
+  armd.parse.as.section(bi,am,type="chapter", rmd.prefix="# Chapter", title.fun=h1, title.display = "block")
+
+}
+
 
 armd.parse.section = function(bi,am) {
   restore.point("armd.parse.section")

@@ -8,10 +8,10 @@ armd.block.types.df = function(...) {
 
   types = c(
     "armd",
-    "chunk","frame","section","subsection","subsubsection",
+    "chunk","frame","chapter", "section","subsection","subsubsection",
     "exercise",
     "preknit","precompute","portrait", "image", "solved",
-    "column","row","info","note","references",
+    "info","note","references",
     "show","notest","show_notest","hint","test","test_args",
     "settings","css","head","layout",
     "toc", "figure", "spoilerNote",
@@ -22,21 +22,20 @@ armd.block.types.df = function(...) {
     "box",
     "define","html"
   )
-  parent.types = c("frame","row", "column","chunk","preknit","precompute","knit","compute","info","note", "section","subsection","exercise","required")
+  parent.types = c("frame","chunk","preknit","precompute","knit","compute","info","note","chapter", "section","subsection","exercise","required")
 
-  container.types = c("frame","info","note","spoilerNote", "section","subsection","exercise","row", "column")
+  container.types = c("frame","info","note","spoilerNote","chapter", "section","subsection","exercise")
 
   dot.levels = c(
     armd = -1000,
+    chapter = -4,
     section = -3,
     subsection = -2,
     subsubsection = -1,
     frame = 1,
-    row = 2,
     references = 2,
-    column = 3,
-    success = 3,
-    when = 3
+    sucess = 3,
+    when = 4
   )
   dot.level = dot.levels[types]
 
@@ -45,6 +44,29 @@ armd.block.types.df = function(...) {
 
   bt.df
 }
+
+
+armd.dot.levels = function(am) {
+  dot.levels = c(
+    armd = -1000,
+    chapter = -4,
+    section = -3,
+    subsection = -2,
+    subsubsection = -1,
+    frame = 1,
+    references = 2,
+    success = 3,
+    when = 3
+  )
+  backto = dot.levels+1
+  names(backto) = paste0("back_to_",names(dot.levels))
+  lev = c(dot.levels, backto)
+  lev = rank(lev,ties.method = "min")
+  lev
+}
+
+
+
 # data frame that specifies background information on blocktypes
 make.am.block.types.df = function(am,opts=am$opts) {
   restore.point("make.am.block.type.df")

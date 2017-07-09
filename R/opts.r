@@ -10,6 +10,7 @@ default.armd.opts = function(
 
   # section numbering
   auto.number = c("chapter", "section", "subsection"),
+  auto.number.prefix = "",
 
   # slides
   slides = identical(am.type,"slides"),
@@ -18,7 +19,7 @@ default.armd.opts = function(
   # menu
   show.together = "section",
   menu.levels = c("section", "subsection"),
-  toc.levels = c("section", "subsection"),
+  toc.levels = c("chapter", "section", "subsection"),
   number.levels = NULL,
 
   menu.placement = c("top","fixed"),
