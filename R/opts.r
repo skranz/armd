@@ -8,9 +8,13 @@ default.armd.opts = function(
   rtutor = FALSE,
   am.type = "shiny",
 
+  # section numbering
+  auto.number = c("chapter", "section", "subsection"),
+
   # slides
   slides = identical(am.type,"slides"),
   slide.type = "auto",
+  slide.counter.parent = NULL, # "chapter", "section" or "subsection"
   # menu
   show.together = "section",
   menu.levels = c("section", "subsection"),

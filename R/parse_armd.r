@@ -110,6 +110,8 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
   am$am.id = opts$id
 
 
+
+
   df = find.rmd.nested(txt, dot.levels)
   opts = add.block.default.packages.to.opts(df$type, opts)
 
@@ -117,6 +119,8 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
   opts[names(priority.opts)] = priority.opts
   set.armd.opts(opts)
   am$opts = opts
+
+
 
   make.am.block.types.df(am, opts)
 
@@ -236,6 +240,8 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
     am$slide.bis = which(am$bdf$type==am$slide.type)
 
   }
+
+  make.section.numbering(am=am)
 
   # Preparse blocks from outer to inner,
   # i.e. ordered by start
@@ -831,6 +837,8 @@ armd.parse.subsection = function(bi,am) {
 
 armd.parse.subsubsection = function(bi,am) {
   restore.point("armd.parse.subsection")
+
+
   armd.parse.as.section(bi,am,type="subsubsection", rmd.prefix="####  Subsubsection",title.fun=h4, title.display = "inline")
 
 }
@@ -841,13 +849,15 @@ armd.parse.frame = function(bi,am) {
   armd.parse.as.section(bi,am,type="frame", rmd.prefix="### Frame",title.fun=h4, title.display = "block")
 }
 
-armd.parse.as.section = function(bi, am, type="section", rmd.prefix="# Section", title.fun=h4, title.display="inline") {
+armd.parse.as.section = function(bi, am, type="section", rmd.prefix="# Section", title.fun=h4, title.display="inline", title.prefix = if (type %in% am$opts$auto.number) am$bdf$part.prefix[[bi]]) {
   restore.point("armd.parse.as.section")
   bdf = am$bdf; br = bdf[bi,];
   arg.str= am$bdf$arg.str[[bi]]
   args = parse.block.args(arg.str =arg.str, allow.unquoted.title = TRUE)
 
   title = first.non.null(args$title, args$name)
+  title  = paste0(title.prefix," ", title)
+
   if (isTRUE(am$opts$verbose.compile)) {
     num = sum(am$bdf$type[1:bi] == type)
     cat(paste0("\nparse ",type, " ", num,": ",title))
@@ -903,7 +913,7 @@ armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd=NULL, 
   # Add slide header
   if (am$slides & identical(am$slide.type,type)) {
     slide.ind = sum(am$bdf$type[1:bi]==am$slide.type)
-    header = slide.title.bar.ui(title = title,slide.ind=slide.ind,num.slides = am$num.slides)
+    header = slide.title.bar.ui(title = title,slide.ind=slide.ind,num.slides = am$num.slides,am=am, bi=bi)
 
   # Add title as header
   } else {

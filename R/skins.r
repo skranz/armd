@@ -73,7 +73,27 @@ armd.navbar = function(am, opts=armd.opts(), nav.levels = c("section","subsectio
   am$navbar.ui
 }
 
-slide.title.bar.ui = function(title, slide.ind, num.slides) {
+slide.title.bar.ui = function(title, slide.ind, num.slides, am, bi) {
+
+  restore.point("slide.title.bar.ui")
+  cp =am$opts[["slide.counter.parent"]]
+  bdf = am$bdf
+  if (is.null(cp)) {
+    ind.str = paste0(slide.ind, " / ",num.slides)
+  } else {
+    parent.col =paste0("parent_",cp)
+    parent.bi = bdf[[parent.col]][[bi]]
+    rows = bdf$type==am$slide.type & bdf[[parent.col]]==parent.bi
+    num.slides = sum(rows)
+    slide.ind = sum(rows & bdf$index <= bi)
+    prefix = bdf$part.prefix[[parent.bi]]
+    if (!is.null(prefix)) {
+      ind.str = paste0(prefix, "-", slide.ind)
+    } else {
+      ind.str = paste0(slide.ind, " / ",num.slides)
+    }
+  }
+
   div(class="armd-slide-title-bar",
     HTML("<table width='100%'><tr><td>"),
     h4(class="slide_title",title),
@@ -81,7 +101,7 @@ slide.title.bar.ui = function(title, slide.ind, num.slides) {
     HTML("<table><tr><td valign='center' nowrap>"),
     div(class="nav_buttons_div remove_offline_print",  armd.navigate.btns()),
     HTML("</td><td valign='center' nowrap style='padding-left: 5px'>"),
-    HTML(paste0(slide.ind, " / ",num.slides)),
+    HTML(ind.str),
     HTML("</td></tr></table>"),
     HTML("</td></tr></table>")
   )
