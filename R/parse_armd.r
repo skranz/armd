@@ -900,7 +900,7 @@ armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd=NULL, 
   # Add slide header
   if (am$slides & identical(am$slide.type,type)) {
     slide.ind = sum(am$bdf$type[1:bi]==am$slide.type)
-    header = slide.title.bar.ui(title = title,slide.ind=slide.ind,num.slides = am$num.slides,am=am, bi=bi)
+    header = slide.title.bar.ui(title = title,slide.ind=slide.ind,num.slides = am$num.slides,am=am, bi=bi, args=args)
 
   # Add title as header
   } else {

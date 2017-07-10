@@ -73,27 +73,31 @@ armd.navbar = function(am, opts=armd.opts(), nav.levels = c("section","subsectio
   am$navbar.ui
 }
 
-slide.title.bar.ui = function(title, slide.ind, num.slides, am, bi) {
+slide.title.bar.ui = function(title, slide.ind, num.slides, am, bi, args) {
 
   restore.point("slide.title.bar.ui")
   cp =am$opts[["slide.counter.parent"]]
   bdf = am$bdf
-  if (is.null(cp)) {
-    ind.str = paste0(slide.ind, " / ",num.slides)
-  } else {
-    parent.col =paste0("parent_",cp)
-    parent.bi = bdf[[parent.col]][[bi]]
-    rows = bdf$type==am$slide.type & bdf[[parent.col]]==parent.bi
-    num.slides = sum(rows)
-    slide.ind = sum(rows & bdf$index <= bi)
-    prefix = bdf$part.prefix[[parent.bi]]
-    if (!is.null(prefix)) {
-      ind.str = paste0(prefix, "-", slide.ind)
-    } else {
+  ind.str = NULL
+  if (!isTRUE(args[["nonumber"]])) {
+    if (is.null(cp)) {
       ind.str = paste0(slide.ind, " / ",num.slides)
+    } else {
+      parent.col =paste0("parent_",cp)
+      parent.bi = bdf[[parent.col]][[bi]]
+      rows = bdf$type==am$slide.type & bdf[[parent.col]]==parent.bi
+      num.slides = sum(rows)
+      slide.ind = sum(rows & bdf$index <= bi)
+      prefix = NULL
+      # does not work when we preview a single slide
+      try({prefix <- bdf$part.prefix[[parent.bi]]},silent = TRUE)
+      if (!is.null(prefix)) {
+        ind.str = paste0(prefix, "-", slide.ind)
+      } else {
+        ind.str = paste0(slide.ind, " / ",num.slides)
+      }
     }
   }
-
   div(class="armd-slide-title-bar",
     HTML("<table width='100%'><tr><td>"),
     h4(class="slide_title",title),
