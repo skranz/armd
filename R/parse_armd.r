@@ -840,16 +840,8 @@ armd.parse.as.section = function(bi, am, type="section", rmd.prefix="# Section",
   restore.point("armd.parse.as.section")
   bdf = am$bdf; br = bdf[bi,];
   arg.str= am$bdf$arg.str[[bi]]
+
   args = parse.block.args(arg.str =arg.str, allow.unquoted.title = TRUE)
-
-  title = first.non.null(args$title, args$name)
-  title  = paste0(title.prefix," ", title)
-
-  if (isTRUE(am$opts$verbose.compile)) {
-    num = sum(am$bdf$type[1:bi] == type)
-    cat(paste0("\nparse ",type, " ", num,": ",title))
-  }
-
 
   # extract layout in [ ]
   if (str.starts.with(arg.str,"[")) {
@@ -863,6 +855,18 @@ armd.parse.as.section = function(bi, am, type="section", rmd.prefix="# Section",
     }
     args$name = str.trim(str.right.of(args$name,']'))
   }
+
+
+
+  title = first.non.null(args$title, args$name)
+  title  = paste0(title.prefix," ", title)
+
+  if (isTRUE(am$opts$verbose.compile)) {
+    num = sum(am$bdf$type[1:bi] == type)
+    cat(paste0("\nparse ",type, " ", num,": ",title))
+  }
+
+
   type = am$bdf$stype[[bi]]
   #if (isTRUE(type %in% am$opts$hide_title)) title = NULL
 

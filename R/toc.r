@@ -2,13 +2,17 @@ armd.parse.toc = function(bi, am, opts=am$opts) {
   restore.point("armd.parse.toc")
   bdf = am$bdf;
 
-  toc.levels = opts$toc.levels
+  arg.str = am$bdf$arg.str[[bi]]
+  args = parse.block.args(arg.str)
+  toc.levels = first.non.null(args$levels,opts$toc.levels)
+
   n = length(toc.levels)
   level.counts = rep(0, n)
   ignore.levels = rep(FALSE,n)
   rows = which(bdf$type %in% toc.levels)
   html = rep("",NROW(bdf))
   old.level = 0
+
   for (i in rows) {
     type = bdf$type[i]
     level = match(type, toc.levels)
