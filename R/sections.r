@@ -4,7 +4,7 @@ armd.has.chapter = function(am) {
   any(am$bdf$type == "chapter") | !is.null(am$opts$auto.number.previous$chapter)
 }
 
-make.section.numbering = function(am) {
+make.section.numbering = function(am, bdf = am$bdf) {
   restore.point("make.section.numbering")
 
   has.chapter = armd.has.chapter(am)
@@ -46,5 +46,5 @@ make.section.numbering = function(am) {
   }
 
   am$bdf = bdf
-  return(invisible())
+  return(invisible(bdf))
 }

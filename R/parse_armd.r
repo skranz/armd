@@ -179,6 +179,8 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
   lev.par = get.levels.parents(bdf$level,!bdf$parse.inner.block)
   bdf$parse.block = lev.par == 0
 
+  am$bdf = bdf
+  bdf = make.section.numbering(am=am)
 
   # Filter bdf if only a subset of elements shall be compiled / shown
   if (!is.null(filter.line)) {
@@ -241,7 +243,6 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
 
   }
 
-  make.section.numbering(am=am)
 
   # Preparse blocks from outer to inner,
   # i.e. ordered by start
