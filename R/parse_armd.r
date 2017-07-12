@@ -24,10 +24,11 @@ preview.armd = function(am=NULL, am.file=NULL,rmd.file=NULL,...) {
 #' @param am.has.sol shall the sample solution be stored in the .am file. Set this option to FALSE if you use problem sets in courses and don't want to assess students the sample solution easily
 #' @param use.memoise shall functions like read.csv be memoised? Data sets then only have to be loaded once. This can make problem sets run faster. Debugging may be more complicated, however.
 #' @export
-parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am.id= NULL, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", cache.dir = file.path(dir,"cache"), plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, start.slide = NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, refreshable.content.ui = FALSE, offline=FALSE,...) {
+parse.armd = function(txt=read.as.utf8(file),file = NULL,name = NULL, am.id= NULL, bdf.filter = NULL,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", cache.dir = file.path(dir,"cache"), plugins=c("stats","export","dataexplorer"),catch.errors=TRUE, priority.opts=list(), figure.web.dir = "figure", filter.line=NULL, filter.type="auto", show.line=NULL, start.slide = NULL, source.file="main", libs=NULL, check.old.armd.sol=TRUE, extra.code.file=NULL, use.memoise = NA, refreshable.content.ui = FALSE, offline=FALSE,...) {
   restore.point("parse.armd")
 
   am = new.env()
+
 
   am$offline = offline
   am$version = 0.1
@@ -38,6 +39,8 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
     dir.create(figure.dir)
   if (!dir.exists(cache.dir))
     dir.create(cache.dir)
+
+
 
   am$Addons = list()
   am$dir = dir
@@ -52,6 +55,7 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
     txt = sep.lines(txt)
 
   cat("\n\nParse academic rmarkdown", name, "...")
+
 
   #Encoding(txt) = "UTF8"
   txt = mark_utf8(txt)
@@ -79,6 +83,12 @@ parse.armd = function(txt=readLines(file,warn=FALSE),file = NULL,name = NULL, am
     yaml = paste0(txt[(df$start[bi]+1):(df$end[bi]-1)], collapse="\n")
     so = read.yaml(text=yaml, keep.quotes=FALSE)
     opts[names(so)] = so
+  }
+
+  name = first.non.null(name, opts[["name"]])
+  if (is.null(name) & !is.null(file)) {
+    short.file = basename(file)
+    name = tools::file_path_sans_ext(short.file)
   }
 
   if (!is.null(name)) opts$name = name
