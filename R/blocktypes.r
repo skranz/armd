@@ -132,8 +132,7 @@ add.cols.if.missing = function(df, ...) {
 # Can be used to automatically load packages
 armd.block.type.default.libs = function(opts) {
   restore.point("armd.block.type.default.libs")
-  pkgs = c(pane="EconCurves",plotpane="EconCurves",panequiz="EconCurves",
-    preknit="RTutor2",precompute="RTutor2",award="RTutor2")
+  pkgs = c(pane="EconCurves",plotpane="EconCurves",panequiz="EconCurves",award="RTutor2")
   if (isTRUE(opts$use.clicker)) {
     pkgs = c(pkgs, c(quiz="courserClicker"))
   } else {
