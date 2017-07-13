@@ -123,7 +123,10 @@ parse.armd = function(txt=read.as.utf8(file),file = NULL,name = NULL, am.id= NUL
 
 
   df = find.rmd.nested(txt, dot.levels)
-  opts = add.block.default.packages.to.opts(df$type, opts)
+
+  opts[names(priority.opts)] = priority.opts
+
+  opts = add.block.default.libs.to.opts(df$type, opts)
 
   # priority opts overwrite settings
   opts[names(priority.opts)] = priority.opts

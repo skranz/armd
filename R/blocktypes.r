@@ -71,10 +71,10 @@ armd.dot.levels = function(am) {
 make.am.block.types.df = function(am,opts=am$opts) {
   restore.point("make.am.block.type.df")
 
-  bps = opts$block.packages
   bl = opts$block.libs
 
-  packages = unique(c(bps, unlist(bl)))
+  packages = unique(c("armd",if (isTRUE(opts$rtutor)) "RTutor2", unlist(bl)))
+
   li = lapply(seq_along(packages), function(i) {
     pkg = packages[[i]]
     if (!require(pkg,character.only = TRUE)) {
@@ -87,8 +87,13 @@ make.am.block.types.df = function(am,opts=am$opts) {
     df = df[,c("type","package","package.pos", "is.widget","is.parent","is.container", "parse.inner.blocks","remove.inner.blocks", "arg.li","header.fun")]
     df
   })
+
   # all block types
   all.df = bind_rows(li)
+
+  # type-package combinations which are explicitly listed in block.libs
+  # get priority.
+  # We set the package.pos of those rows to 0, i.e. they get priority.
   for (type in names(bl)) {
     row = which(all.df$type == type & all.df$package == bl[[type]])[1]
     if (is.na(row)) {
@@ -125,17 +130,28 @@ add.cols.if.missing = function(df, ...) {
 
 # Some default packages for addons
 # Can be used to automatically load packages
-armd.block.type.default.packages = function() {
-  c(pane="EconCurves",plotpane="EconCurves",panequiz="EconCurves",
-    preknit="RTutor2",precompute="RTutor2",award="RTutor2",
-    quiz="RTutor2")
-
+armd.block.type.default.libs = function(opts) {
+  restore.point("armd.block.type.default.libs")
+  pkgs = c(pane="EconCurves",plotpane="EconCurves",panequiz="EconCurves",
+    preknit="RTutor2",precompute="RTutor2",award="RTutor2")
+  if (isTRUE(opts$use.clicker)) {
+    pkgs = c(pkgs, c(quiz="courserClicker"))
+  } else {
+    pkgs = c(pkgs, c(quiz="RTutor2"))
+  }
+  pkgs
 }
 
-add.block.default.packages.to.opts = function(types, opts) {
-  pkg = armd.block.type.default.packages()
+add.block.default.libs.to.opts = function(types, opts) {
+  restore.point("add.block.default.libs.to.opts")
+
+  pkg = armd.block.type.default.libs(opts=opts)
+  # remove default packaes from unused types
   pkg = pkg[names(pkg) %in% types]
-  opts$block.packages = unique(c(opts$block.packages,pkg))
+  # remove default packages from types with manually specified packages
+  pkg = pkg[!names(pkg) %in% names(opts$block.lib)]
+
+  opts$block.libs = c(unlist(opts$block.libs),pkg)
   opts
 }
 

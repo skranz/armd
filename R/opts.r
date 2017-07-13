@@ -1,8 +1,6 @@
 
 default.armd.opts = function(
   # packages that define blocks
-  block.packages = c("armd"),
-
   newline.code = "§NL§",
   rmd.modes = c("rmd","tex"),
   rtutor = FALSE,
@@ -61,7 +59,6 @@ default.armd.opts = function(
   name = "armd",
   id = "armd",
   hide_title = if (slides) c("section","subsection") else NULL,
-  block.libs = NULL,
   offline = FALSE,
   inline.images = offline,
   ...
