@@ -3,6 +3,17 @@ var rtNumSlides = 3;
 var rtSlideIds = [];
 var prevSlideId = "";
 
+
+$(document).on("click",".rtSlideMenuBtn, #rtSlideMenuBtn", function() {
+  var display = $("#slidePluginPanel").css("display");
+  if (display === "none") {
+    $("#slidePluginPanel").show().trigger("shown");
+  } else {
+    $("#slidePluginPanel").hide();
+  }
+});
+
+
 $(document).on("click",".rtNextBtn, #rtNextBtn", function() {
 //$(".rtNextBtn, #rtNextBtn").click(function(){
   rtShowNext();
