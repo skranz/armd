@@ -216,7 +216,8 @@ parse.armd = function(txt=read.as.utf8(file),file = NULL,name = NULL, am.id= NUL
 
   # Load libs and create envs
   am$opts$libs = unique(c(am$opts$libs,libs))
-  load.packages(am$opts$libs)
+  # on build time we always need all libs
+  load.packages(am$opts$libs, need.all.libs=TRUE)
 
   am$init.env = new.env(parent=parent.env(globalenv()))
 

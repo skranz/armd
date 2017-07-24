@@ -6,7 +6,7 @@ writeClipboardAsCSV = function(df, round.digits=NULL, signif.digits = NULL) {
     }
     vals
   })
-  txt = do.call(paste0, c(li, list(sep=", ")))
+  txt = do.call(paste, c(li, list(sep=", ")))
   txt = c(paste0(names(li), collapse=", "),txt)
   writeClipboard(txt)
 }
@@ -628,19 +628,31 @@ move.library = function(name, pos=2) {
 }
 
 
-load.packages = function(libs, verbose=FALSE) {
+load.packages = function(libs, verbose=FALSE, need.all.libs=TRUE) {
   if (length(libs)==0)
     return()
+  num.missing = 0
   for (i in seq_along(libs)) {
     lib = libs[i]
     if (verbose)
       display("load package ", lib, "...")
     ret = suppressWarnings(require(lib, quietly=TRUE, warn.conflicts =FALSE,character.only=TRUE))
     if (!ret) {
-      stop(paste0("Please install the required package '", lib,"'."))
+      if (need.all.libs) {
+        stop(paste0("Please install the required package '", lib,"'."))
+      } else {
+        num.missing = num.missing+1
+        warning(paste0("Warning could not find package '", lib,"'. "))
+      }
     }
-    if (verbose)
-      display("... all required packages loaded.")
+    if (verbose) {
+      if (num.missing==0) {
+        display("... all required packages loaded.")
+      } else {
+        display(num.missing, " required packages were not found.")
+      }
+    }
+
   }
 }
 

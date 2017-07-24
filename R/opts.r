@@ -61,6 +61,7 @@ default.armd.opts = function(
   hide_title = if (slides) c("section","subsection") else NULL,
   offline = FALSE,
   inline.images = offline,
+  need.all.libs = TRUE,
   ...
 ) {
   args = c(as.list(environment()),list(...))
