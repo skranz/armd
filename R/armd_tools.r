@@ -720,3 +720,60 @@ str.to.valid.file.name = function(str, replace.char = "_") {
   str = gsub("[ \\(\\)\\.\\:]",replace.char,str)
   str
 }
+
+search.object.for.string = function(x,search, path="x", fixed=TRUE, string.classes = c("character","shiny.tag.list","shiny.tag")) {
+
+  restore.point("search.object.for.string")
+  #cat("\n",path)
+  # also search attributes
+  attr = attributes(x)
+  if (length(attr)>0) {
+    attr = attr[setdiff(names(attr),c("names","dim"))]
+  }
+  res = NULL
+  if (length(attr)>0) {
+    restore.point("search.object.for.string.attr")
+
+    res = search.object.for.string(attr,search, path=paste0(path,"@attr"),fixed=fixed, string.class=string.classes)
+  }
+  if (any(!is.na(match(class(x), string.classes)))) {
+    str = merge.lines(as.character(x))
+    if (length(str)==0) return(res)
+    if (has.substr(str,search,fixed = fixed)) {
+      cat("\n",path,":  ", substring(str,1,200),"\n")
+      return(path)
+    }
+    return(res)
+  }
+#  if (is.environment(x)) {
+#    x = as.list(x)
+#
+#    if (is(x,"try-error")) return(NULL)
+#  }
+  attr.res = res
+  if (is.list(x) | is.environment(x)) {
+    if (is.environment(x)) {
+      names = ls(x)
+    } else {
+      names = names(x)
+    }
+    if (is.null(names)) {
+      res = lapply(seq_along(x), function(i) {
+        search.object.for.string(x[[i]],search, path=paste0(path,"[[",i,"]]"),fixed=fixed, string.class=string.classes)
+      })
+    } else {
+      res = lapply(names, function(name) {
+        search.object.for.string(x[[name]],search, path=paste0(path,"$",name),fixed=fixed, string.class=string.classes)
+      })
+    }
+    null.ind = sapply(res, is.null)
+    res = res[!null.ind]
+    if (length(res)==0) return(NULL)
+    str = paste0(unlist(res),collapse="\n")
+    if (length(attr.res)>0) {
+      str = paste(attr.res,"\n",res)
+    }
+    return(str)
+  }
+  return(attr.res)
+}
