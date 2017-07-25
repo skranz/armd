@@ -611,7 +611,7 @@ armd.parse.chunk = function(bi,am, opts=armd.opts()) {
   } else {
     # knitted chunk
     rmd = code.to.rmd.chunk(code,args=args)
-    ui = knit.chunk(rmd,envir = am$pre.env,out.type="shiny", deps.action="attr", use.commonmark = TRUE)
+    ui = knit.chunk(rmd,envir = am$pre.env,out.type="shiny", deps.action="ignore", use.commonmark = TRUE, add.meta.attr=TRUE)
 
     meta = attr(ui,"knit_meta")
     armd.add.meta(am=am, meta=meta)

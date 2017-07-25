@@ -1,3 +1,27 @@
+examples.dependencies = function() {
+  rmd = '
+```{r}
+library(ggplot2); library(plotly)
+ggplotly(
+  ggplot(data=data_frame(x=1:10,y=1:10),aes(x=x,y=y)) + geom_line()
+)
+```
+'
+  ui = rmdtools::knit.chunk(text = rmd,out.type = "shiny",deps.action = "ignore")
+  findDependencies(ui)
+  res = transformTagDependecies(ui, makeDependenciesRelativeToPackage)
+  findDependencies(res)
+
+  deps = findDependencies(ui)
+  deps = makeDependenciesRelativeToPackage(deps)
+
+
+  setwd("D:/libraries/armd/examples")
+  am = parse.armd(file = "test.Rmd")
+  am$dependencies
+  ui = armd.ui(am=am)
+  findDependencies(ui)
+}
 
 # will be called when a chunk is rendered
 # mainly relevant if a html widget is rendered
@@ -14,31 +38,5 @@ armd.add.meta = function(am, meta) {
 
   am$dependencies = unique(c(am[["dependencies"]], deps))
   am$header.tags  = c(am$header.tags, meta[is.head])
-
-}
-
-makeDependencyRelativeToPackage = function(dep) {
-  if (!is.null(dep$package)) return(dep)
-  libPaths = .libPaths()
-  restore.point("makeDependencyRelativeToPackage")
-
-  src = dep$src[["file"]]
-
-  src = gsub("\\\\","/",src,fixed=TRUE)
-
-  matched.paths =  which(substring(src, 1, nchar(libPaths)) == libPaths)
-  # no dependency in libPath
-  if (length(matched.paths)==0) return(dep)
-
-  libPath = libPaths[matched.paths[1]]
-
-  package = str.right.of(src,paste0(libPath,"/"))
-  package = str.left.of(package,"/")
-
-  dep$package = package
-  rel.source = str.right.of(src,paste0(libPath,"/",package,"/"))
-  dep$src[["file"]] = rel.source
-
-  dep
 
 }
