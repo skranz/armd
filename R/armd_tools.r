@@ -372,7 +372,7 @@ extract.command = function(txt,command) {
   if (length(lines)==0)
     return(NULL)
   val = str_trim(substring(txt[lines],nchar(command)+1))
-  data.frame(line=lines, val=val, stringsAsFactors=FALSE)
+  fast_df(line=lines, val=val)
 }
 
 
@@ -580,7 +580,7 @@ describe.var.internal = function(v, name=NULL, funs = c("valid.obs","unique.obs"
 get.top.x.obs = function(v, top.x=5, digits=4) {
   restore.point("get.top.x.obs")
 
-  qu.df = data_frame(v=v)
+  qu.df = fast_df(v=v)
   counts.df = summarise(group_by(qu.df,v), counts = n())
 
   shares = counts.df[["counts"]] / length(v)
@@ -601,7 +601,7 @@ get.top.x.obs = function(v, top.x=5, digits=4) {
   names[is.na(names)] = "<NA>"
   top.x = min(top.x, length(shares))
 
-  dt = data.frame(var=names[1:top.x], share=as.numeric(shares[1:top.x]))
+  dt = fast_df(var=names[1:top.x], share=as.numeric(shares[1:top.x]))
   dt
 }
 

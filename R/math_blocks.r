@@ -5,6 +5,10 @@ parse.as.math.block = function(bi, am, use.count = TRUE, add.end="",...) {
   type = br$type
 
   title = args$title
+  if (!is.null(args$use.count)) {
+    use.count = args$use.count
+  }
+
   if (is.null(title)) {
     if (use.count) {
       count = sum(bdf$type[seq.int(bi)] == br$type)

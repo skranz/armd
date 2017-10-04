@@ -66,7 +66,7 @@ parse.armd = function(txt=read.as.utf8(file),file = NULL,name = NULL, am.id= NUL
 
   # add outer container
   txt = c("#. armd",txt)
-  am$text.info = rbind(data_frame(line=NA,source=NA),am$text.info)
+  am$text.info = rbind(fast_df(line=NA,source=NA),am$text.info)
 
   txt = fast.name.rmd.chunks(txt)
 
@@ -361,7 +361,7 @@ block.source.msg = function(bi, am, bdf = am$bdf) {
 
   br = bdf[bi,]
   lines = br$start:br$end
-  df = data_frame(line=am$txt.lines[lines],source=am$txt.source[lines])
+  df = fast_df(line=am$txt.lines[lines],source=am$txt.source[lines])
   sdf = summarise(group_by(df, source), start=min(line),end=max(line))
   sdf$file = am$source.files[sdf$source]
 
@@ -926,7 +926,7 @@ armd.parse.as.container = function(bi, am,args=NULL, inner.ui = NULL, rmd=NULL, 
       header = container.title.html(title = title, anchor=anchor, type=type, title.fun=title.fun, display=title.display, hide=title.hide)
   }
   if (!is.null(header)) {
-    inner.ui = list(header, inner.ui)
+    inner.ui = list(header, div(class=paste0("armd-static-inner-container-div ",type,"-inner-container-div"), inner.ui))
   }
 
   armd.set.rmd(bi=bi, am=am, rmd=rmd, rmd.prefix=rmd.prefix, rmd.postfix=rmd.postfix)

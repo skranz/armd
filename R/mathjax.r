@@ -1,7 +1,7 @@
-with.mathjax = function (..., config=c("TeX-AMS_HTML", "TeX-AMS-MML_SVG")[2], typeset.mathjax = !TRUE)
+with.mathjax = function (..., config=c("TeX-AMS_HTML", "TeX-AMS-MML_SVG")[2], typeset.mathjax = !TRUE, local.mathjax = !isTRUE(getOption("use.local.mathjax")==FALSE))
 {
   # if exists, take local mathjax version
-  if (require(MathjaxLocal))
+  if (require(MathjaxLocal) & local.mathjax)
     return(MathjaxLocal::withMathJax(...))
 
   return(shiny::withMathJax(...))

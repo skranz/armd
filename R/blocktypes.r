@@ -40,7 +40,7 @@ armd.block.types.df = function(...) {
   dot.level = dot.levels[types]
 
   n = length(types)
-  bt.df = data_frame(type=types, package="armd", is.widget=FALSE, parse.inner.blocks = (type!="chunk"), remove.inner.blocks=FALSE, is.parent=types %in% parent.types, is.container = types %in% container.types, dot.level=dot.level, arg.li = vector("list",n))
+  bt.df = fast_df(type=types, package="armd", is.widget=FALSE, parse.inner.blocks = (types!="chunk"), remove.inner.blocks=FALSE, is.parent=types %in% parent.types, is.container = types %in% container.types, dot.level=dot.level, arg.li = vector("list",n))
 
   bt.df
 }

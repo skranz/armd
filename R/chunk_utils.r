@@ -1,7 +1,7 @@
 
 remove.verbatim.end.chunks = function(chunk.start, chunk.end) {
   restore.point("remove.verbatim.end.chunks")
-  df = data.frame(ind =c(0, seq_along(chunk.start), seq_along(chunk.end)),
+  df = fast_df(ind =c(0, seq_along(chunk.start), seq_along(chunk.end)),
                   row=c(0, chunk.start,chunk.end),
                   type=c("f",
                          rep("s",length(chunk.start)),
