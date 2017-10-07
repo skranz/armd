@@ -1,0 +1,282 @@
+
+#< settings
+lang: de
+slides: TRUE
+slide.type: frame
+use.whiskers: TRUE
+whiskers.round: 2
+auto.number: [section, subsection]
+slide.counter.parent: [section]
+toc.levels: [section, subsection]
+#>
+
+#< layout 2col
+whiskers:
+  default:
+    leftcol.width: '50%'
+  mobile:
+    leftcol.width: 6
+##. default
+{{main}}
+<table class="frametable">
+<tr><td class="leftcol" style="width: {{leftcol.width}}">
+{{leftcol}}
+</td><td class="rightcol">
+{{rightcol}}
+</td></tr></table>
+{{bottom}}
+##. mobile
+{{main}}
+<div class="row">
+<div class="col-sm-{{leftcol.width}}">
+{{leftcol}}
+</div>
+<div class="col-sm-{{12-leftcol.width}}">
+{{rightcol}}
+</div>
+</div>
+#>
+
+
+#< head
+
+<link href='https://fonts.googleapis.com/css?family=Handlee' rel='stylesheet' type='text/css'>
+
+
+<link href='https://fonts.googleapis.com/css?family=Kalam:400,700' rel='stylesheet' type='text/css'>
+
+<link href='https://fonts.googleapis.com/css?family=Sniglet' rel='stylesheet' type='text/css'>
+
+<link href='https://fonts.googleapis.com/css?family=Signika:400,600' rel='stylesheet' type='text/css'>
+
+<link href='https://fonts.googleapis.com/css?family=Catamaran:500' rel='stylesheet' type='text/css'>
+
+<link href='https://fonts.googleapis.com/css?family=BenchNine:700' rel='stylesheet' type='text/css'>
+
+<script>
+$(document).on("click","hide",function() {
+  $(this).toggleClass("shown_hide");
+});
+</script>
+
+
+<script>
+$(document).keydown(function(e){
+  // Page down (used by presenter)
+  // show next slide if scrolled to bottom
+  if(e.keyCode == 40){
+    if($(window).scrollTop() + $(window).height() >= $(document).height()-2) {
+      rtShowNext();
+    }
+  // page-up keydown
+  } else if (e.keyCode == 38) {
+    if($(window).scrollTop() <= 1) {
+      rtShowPrev();
+    }
+  }
+});
+</script>
+
+#>
+
+#< css
+
+
+.quiz_div {
+  padding-left: 20px;
+  margin-left: 3px;
+}
+@media screen {
+  .quiz_div {
+    border-left: 6px solid #9999ff;
+  }
+}
+
+.quiz_div .shiny-input-container:not(.shiny-input-container-inline) {
+width: 600px;
+padding-left: 20px;
+}
+
+/* Makes disconnection grey out much milder */
+ #shiny-disconnected-overlay {
+    position: fixed;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    background-color: #f7f7f7;
+    opacity: 0.5;
+    z-index: -99998;
+    pointer-events: auto;
+    overflow: auto;
+}
+
+.autoSizeTable {
+  display: block;
+  width: 100%
+}
+
+.autoSizeTable img {
+  max-width: 100%;
+  display:block    
+  height: 100%;
+  width: 100%;
+}
+
+.autoSize {
+  max-width: 100%;
+  display:block    
+  height: 100%;
+  width: 100%;
+}
+
+p {
+  margin-top: 6px;
+  margin-right: 0px;
+  margin-bottom: 4px;
+  margin-left: 0px;
+}
+
+blockquote {
+  font-size: 14px;
+  padding-left: 1em;
+  background: #f9f9f9;  
+}
+blockquote ul {
+  font-size: 14px;
+  padding-left: 1em;
+}
+
+@media print {
+.spoilerNote {
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+  font-size: 9;
+}
+}
+
+
+@media print {
+  body {
+    position: relative;
+  }
+  #maindiv {
+    position: relative;
+  }
+  .container-block-title {
+    page-break-after: avoid;
+    position: relative;    
+  }  
+  .slide_title, .armd-slide-title-bar {
+    page-break-after: avoid !important;
+    position: relative;
+  }
+    
+  .slide-container-div {
+    position: relative;
+    orphans: 5;
+    widows: 5;
+    page-break-inside: avoid;
+  }
+  .frame-inner-container-div {
+    position: relative;
+    page-break-before: avoid !important;
+  }  
+  
+  .section-title {
+    page-break-after: avoid !important;
+    position: relative;    
+  }  
+
+  /* Overwrite bootstrap css */
+  a[href]:after {
+    content: "";
+  }
+  
+}
+
+@media print {
+  .slide-container-div {
+    padding-left: 2%; padding-right: 2%;
+  }
+}
+
+.panel-title {
+  font-size: 14px;
+}
+
+.panel-heading {
+    padding-top: 5px;
+    padding-right: 10px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+}
+
+cap {
+  text-align: center;
+  font-size: 12px;
+}
+
+hide {
+  /*visibility: hidden; */
+  color: #cccccc;
+  background-color: #cccccc;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+hide.shown_hide {
+  visibility: visible;
+  color: #000055;
+  background-color: #ffffff;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+}
+/* Corrects mistake in nested list rendering */
+li p {
+  margin-top: 6px;
+  margin-right: 0px;
+  margin-bottom: 4px;
+  margin-left: 0px;
+}
+/* Make lists take less space */
+ol, ul {
+    padding-left: 30px;
+}
+
+td ol, td ul {
+  padding-left: 10px;
+}
+}
+
+table.frametable {
+  table-layout: fixed; width: 100%;
+}
+
+td.leftcol {
+  vertical-align: top;
+  width: 50%;
+  padding-top: 0px;
+  padding-right: 5px;
+}
+td.rightcol {
+  vertical-align: top;
+  padding-top: 0px;
+}
+
+.tooltip-inner {
+    white-space: pre-wrap;
+}
+
+@media screen{
+  .slide-container-div {
+    padding-left: 12%; padding-right: 12%;
+  }
+}
+#>

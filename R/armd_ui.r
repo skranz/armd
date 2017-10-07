@@ -80,10 +80,10 @@ armd.slide.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE, 
 
   ui = tagList(
     tags$head(HTML("\n<!-- MyHeadStart -->\n")),
-
     singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css',href = 'highlightjs/styles/mycode.css'))),
     singleton(tags$head(tags$script(src = 'highlightjs/highlight.min.js',class="remove_offline", type = 'text/javascript'))),
     singleton(tags$head(tags$script(src = 'highlightjs/languages/r.min.js', class="remove_offline",type = 'text/javascript'))),
+    mathjaxHeader(),
     head,
     am$dependencies,
     am$header.tags,
@@ -126,6 +126,7 @@ armd.page.ui = function(am = NULL, am.file=NULL, rmd.file=NULL, add.page=TRUE) {
     singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css',href = 'highlightjs/styles/mycode.css'))),
     singleton(tags$head(tags$script(src = 'highlightjs/highlight.min.js',class="remove_offline", type = 'text/javascript'))),
     singleton(tags$head(tags$script(src = 'highlightjs/languages/r.min.js',class="remove_offline",type = 'text/javascript'))),
+    mathjaxHeader(),
     head,
     am$dependencies,
     am$header.tags,

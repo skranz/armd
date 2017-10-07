@@ -111,6 +111,8 @@ function rtShowSlide(slideNum, force) {
     }
   }
 
+  // Scroll to top
+  $(window).scrollTop(0);
   // try to send an shinyEvent
   // in case the server is interested in the current slide
   try { Shiny.onInputChange("armdShowSlide", {eventId: "armdShowSlide", id: "armdShowSlide", nonce: Math.random(),slideNum: slideNum, slideId: id}); } catch(e) {}
