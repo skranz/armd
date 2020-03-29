@@ -250,8 +250,14 @@ findShinyRessourceDir = function(src) {
   right = str.right.of(loc.src,"/")
 
   sr = shiny:::.globals$resources
-
-  dirs = sapply(sr[names], function(sr) sr$directoryPath)
+  if (!is.null(sr)) {
+    # Older shiny version
+    dirs = sapply(sr[names], function(sr) sr$directoryPath)
+  } else {
+    # Newer shiny version
+    sr = shiny:::.globals$resourcePaths
+    dirs = sapply(sr[names], function(sr) sr$path)
+  }
   dirs[names=="shared"] = paste0(path.package("shiny"),"/www/shared")
   dirs = file.path(dirs,right)
   src[!is.web] = dirs

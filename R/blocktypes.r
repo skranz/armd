@@ -10,7 +10,7 @@ armd.block.types.df = function(...) {
     "armd",
     "chunk","frame","chapter", "section","subsection","subsubsection",
     "exercise",
-    "preknit","precompute","portrait", "image", "solved",
+    "preknit","precompute","portrait", "image", "solved", "img",
     "info","note","references",
     "show","notest","show_notest","hint","test","test_args",
     "settings","css","head","layout",
@@ -56,7 +56,8 @@ armd.dot.levels = function(am) {
     frame = 1,
     references = 2,
     success = 3,
-    when = 3
+    when = 3,
+    img = 1000
   )
   backto = dot.levels+1
   names(backto) = paste0("back_to_",names(dot.levels))

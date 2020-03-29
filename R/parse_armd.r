@@ -729,7 +729,7 @@ armd.parse.figure = function(bi,am) {
 
 
 armd.parse.portrait = function(bi,am) {
-  restore.point("armd.parse.image")
+  restore.point("armd.parse.portrait")
   bdf = am$bdf; br = bdf[bi,];
 
   args = get.yaml.block.args(bi,am)
@@ -770,6 +770,8 @@ armd.parse.portrait = function(bi,am) {
   set.bdf.ui(HTML(tab),bi,am)
 }
 
+
+
 armd.parse.image = function(bi,am, download.image=TRUE) {
   restore.point("armd.parse.image")
   bdf = am$bdf; br = bdf[bi,];
@@ -796,6 +798,31 @@ armd.parse.image = function(bi,am, download.image=TRUE) {
   } else {
     html = '<p>...figure here...</p>'
   }
+  set.bdf.ui(HTML(html),bi,am)
+}
+
+armd.parse.img = function(bi,am, base64=TRUE) {
+  restore.point("armd.parse.img")
+  bdf = am$bdf; br = bdf[bi,];
+  arg.str= am$bdf$arg.str[[bi]]
+  args = parse.block.args(arg.str =arg.str, allow.unquoted.title=FALSE)
+
+  args = get.yaml.block.args(bi,am)
+  file = args$file
+  base64 = first.non.null(args$base64,TRUE)
+  file.type = tools::file_ext(file)
+  img.args = args[setdiff(names(args),c("file","base64"))]
+  if (!base64) {
+    stop("Can currently only implement img blocks in base64 encoding. Try image or figure instead.")
+  }
+
+  uri = knitr::image_uri(file)
+  if (length(img.args)>0) {
+    html.opts = paste0(names(img.args),'="',img.args,'"', collapse=", ")
+  } else {
+    html.opts = ""
+  }
+  html = paste0('<img src="',uri,'" ', html.opts,">")
   set.bdf.ui(HTML(html),bi,am)
 }
 
