@@ -56,8 +56,7 @@ armd.dot.levels = function(am) {
     frame = 1,
     references = 2,
     success = 3,
-    when = 3,
-    img = 1000
+    when = 3
   )
   backto = dot.levels+1
   names(backto) = paste0("back_to_",names(dot.levels))
