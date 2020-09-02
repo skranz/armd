@@ -217,8 +217,6 @@ make.greece.code = function() {
 ∏,prod,&prod;,x220F
 ∑,sum,&sum;,x2211
 √,surd,&radic;,x221A
-∞,infty,&infin;,x221E
-∧,wedge,&and;,x2227
 ∨,vee,&or;,x2228
 ∩,cap,&cap;,x2229
 ∪,cup,&cup;,x222A

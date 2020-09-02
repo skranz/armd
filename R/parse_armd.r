@@ -73,7 +73,6 @@ parse.armd = function(txt=read.as.utf8(file),file = NULL,name = NULL, am.id= NUL
   dot.levels = armd.dot.levels()
   df = find.rmd.nested(txt, dot.levels)
 
-
   # first load settings in opts
   # settings in rmd file overwrite opts
   bis = which(df$type == "settings")

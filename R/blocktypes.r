@@ -35,7 +35,8 @@ armd.block.types.df = function(...) {
     frame = 1,
     references = 2,
     sucess = 3,
-    when = 4
+    when = 4,
+    img = 1000
   )
   dot.level = dot.levels[types]
 
@@ -62,6 +63,7 @@ armd.dot.levels = function(am) {
   names(backto) = paste0("back_to_",names(dot.levels))
   lev = c(dot.levels, backto)
   lev = rank(lev,ties.method = "min")
+  lev = c(lev, "img"=Inf)
   lev
 }
 
